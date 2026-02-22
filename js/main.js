@@ -64,10 +64,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Visit Button
     visitBtn.addEventListener('click', function() {
-        const subjects = document.getElementById('subjects');
-        const literatureType = document.getElementById('literature-type');
-        
-        console.log('Visit clicked - Subjects:', subjects.value, 'Type:', literatureType.value);
+        console.log('Visit clicked');
         // Add navigation logic here
         // window.location.href = '/visit';
     });
@@ -77,46 +74,6 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Create clicked');
         // Add create logic here
         // window.location.href = '/create';
-    });
-
-    // Populate dropdowns
-    const subjectsData = [
-        'Fiction',
-        'Non-Fiction',
-        'Poetry',
-        'Drama',
-        'Science',
-        'Philosophy',
-        'History',
-        'Art'
-    ];
-
-    const literatureTypesData = [
-        'Novel',
-        'Short Story',
-        'Essay',
-        'Biography',
-        'Journal',
-        'Manuscript',
-        'Rare Book',
-        'Digital Archive'
-    ];
-
-    const subjectsSelect = document.getElementById('subjects');
-    const typeSelect = document.getElementById('literature-type');
-
-    subjectsData.forEach(subject => {
-        const option = document.createElement('option');
-        option.value = subject.toLowerCase().replace(/\s+/g, '-');
-        option.textContent = subject;
-        subjectsSelect.appendChild(option);
-    });
-
-    literatureTypesData.forEach(type => {
-        const option = document.createElement('option');
-        option.value = type.toLowerCase().replace(/\s+/g, '-');
-        option.textContent = type;
-        typeSelect.appendChild(option);
     });
 
     // Search functionality
