@@ -183,19 +183,19 @@
                 <button class="action-btn primary" id="phase6Continue">Continue</button>
             </div>
 
-            <!-- Completion -->
+                        <!-- Phase Complete: View Book -->
             <div class="phase-content" id="phaseComplete">
-                <div class="completion-state">
-                    <h2 class="phase-title">Your Book is Complete</h2>
-                    <p class="phase-description">The Living Library has generated your full manuscript.</p>
-                    
-                    <div class="book-preview" id="finalPreview">
-                        <!-- Final book preview -->
+                <div class="book-viewer">
+                    <div class="viewer-header">
+                        <h2 class="phase-title" id="finalTitle">Book Title</h2>
+                        <div class="viewer-actions">
+                            <button class="action-btn secondary" onclick="resetCreate()">Create New</button>
+                            <button class="action-btn primary" onclick="publishBook()">Publish Book</button>
+                        </div>
                     </div>
-
-                    <div class="button-group">
-                        <button class="action-btn secondary" onclick="resetCreate()">Create Another</button>
-                        <button class="action-btn primary" onclick="saveToLibrary()">Save to Library</button>
+                    
+                    <div class="book-content" id="bookContent">
+                        <!-- Formatted book renders here -->
                     </div>
                 </div>
             </div>
