@@ -303,8 +303,9 @@ body {
     gap: 1.5rem;
 }
 
-/* Action Buttons */
-.action-btn {
+/* Action Buttons - works for both button and anchor elements */
+.action-btn,
+a.action-btn {
     padding: 1.5rem 4rem;
     font-size: 1rem;
     font-family: var(--font-sans);
@@ -316,22 +317,21 @@ body {
     cursor: pointer;
     transition: var(--transition);
     min-width: 160px;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.action-btn:hover {
+.action-btn:hover,
+a.action-btn:hover {
     background: var(--color-bg-secondary);
     border-color: var(--color-border-hover);
 }
 
-.action-btn:active {
+.action-btn:active,
+a.action-btn:active {
     transform: translateY(1px);
-}
-
-a.action-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    text-decoration: none;
 }
 
 /* Footer */
@@ -362,7 +362,8 @@ a.action-btn {
         max-width: 280px;
     }
 
-    .action-btn {
+    .action-btn,
+    a.action-btn {
         padding: 1.25rem;
         width: 100%;
         min-width: auto;
@@ -375,7 +376,8 @@ a.action-btn {
         max-width: 140px;
     }
 
-    .action-btn {
+    .action-btn,
+    a.action-btn {
         font-size: 0.9rem;
         letter-spacing: 0.15em;
     }
