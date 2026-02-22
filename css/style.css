@@ -75,14 +75,25 @@ body {
     z-index: 100;
 }
 
-.site-title {
-    font-family: var(--font-serif);
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--color-text-primary);
-    letter-spacing: 0.05em;
-    text-align: center;
+.logo-container {
     flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 1rem;
+}
+
+.header-logo {
+    max-height: 40px;
+    width: auto;
+    max-width: 200px;
+    object-fit: contain;
+    opacity: 0.95;
+    transition: opacity 0.2s ease;
+}
+
+.header-logo:hover {
+    opacity: 1;
 }
 
 /* Hamburger Menu Button */
@@ -393,8 +404,9 @@ body {
         padding: 1rem;
     }
 
-    .site-title {
-        font-size: 1.25rem;
+    .header-logo {
+        max-height: 32px;
+        max-width: 160px;
     }
 
     .filter-container {
@@ -412,8 +424,9 @@ body {
 }
 
 @media (max-width: 480px) {
-    .site-title {
-        font-size: 1.1rem;
+    .header-logo {
+        max-height: 28px;
+        max-width: 140px;
     }
 
     .filter-container {
