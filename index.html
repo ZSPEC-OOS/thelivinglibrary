@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Living Library</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background Layer -->
+    <div class="background-container">
+        <div class="background-image"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+            <span class="hamburger"></span>
+            <span class="hamburger"></span>
+            <span class="hamburger"></span>
+        </button>
+        
+        <h1 class="site-title">The Living Library</h1>
+        
+        <button class="search-btn" id="searchBtn" aria-label="Search">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Navigation Menu (Hidden by default) -->
+    <nav class="nav-menu" id="navMenu">
+        <div class="nav-content">
+            <button class="close-btn" id="closeMenu" aria-label="Close menu">×</button>
+            <ul class="nav-list">
+                <li><a href="#" class="nav-link active">Home</a></li>
+                <li><a href="#" class="nav-link">Browse Collection</a></li>
+                <li><a href="#" class="nav-link">Subjects</a></li>
+                <li><a href="#" class="nav-link">Types</a></li>
+                <li><a href="#" class="nav-link">About</a></li>
+                <li><a href="#" class="nav-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Search Overlay (Hidden by default) -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-container">
+            <button class="close-btn" id="closeSearch" aria-label="Close search">×</button>
+            <input type="text" class="search-input" placeholder="Search the library..." autofocus>
+            <button class="search-submit">Search</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="main-content">
+        <div class="filter-container">
+            <!-- Subjects Dropdown -->
+            <div class="filter-group">
+                <label for="subjects" class="filter-label">Subjects</label>
+                <div class="custom-select">
+                    <select id="subjects" class="filter-select">
+                        <option value="" disabled selected>Select a subject...</option>
+                    </select>
+                    <span class="select-arrow"></span>
+                </div>
+            </div>
+
+            <!-- Type of Literature Dropdown -->
+            <div class="filter-group">
+                <label for="literature-type" class="filter-label">Type of Literature</label>
+                <div class="custom-select">
+                    <select id="literature-type" class="filter-select">
+                        <option value="" disabled selected>Select a type...</option>
+                    </select>
+                    <span class="select-arrow"></span>
+                </div>
+            </div>
+
+            <!-- Visit Button -->
+            <button class="visit-btn" id="visitBtn">Visit</button>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <p>&copy; 2026 The Living Library. All rights reserved.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+</body>
+</html>
