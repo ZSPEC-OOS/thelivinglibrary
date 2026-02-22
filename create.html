@@ -66,212 +66,136 @@
     <main class="create-main">
         <div class="create-container">
             
-            <!-- Progress Steps -->
-            <div class="progress-bar">
-                <div class="step active" data-step="1">
+            <!-- Progress Bar -->
+            <div class="progress-bar" id="progressBar">
+                <div class="step active" data-phase="1">
                     <span class="step-number">1</span>
                     <span class="step-label">Concept</span>
                 </div>
-                <div class="step" data-step="2">
+                <div class="step" data-phase="2">
                     <span class="step-number">2</span>
-                    <span class="step-label">Details</span>
+                    <span class="step-label">Development</span>
                 </div>
-                <div class="step" data-step="3">
+                <div class="step" data-phase="3">
                     <span class="step-number">3</span>
-                    <span class="step-label">Structure</span>
+                    <span class="step-label">Outline</span>
                 </div>
-                <div class="step" data-step="4">
+                <div class="step" data-phase="4">
                     <span class="step-number">4</span>
-                    <span class="step-label">Generate</span>
+                    <span class="step-label">Reference</span>
+                </div>
+                <div class="step" data-phase="6">
+                    <span class="step-number">5</span>
+                    <span class="step-label">Chapters</span>
                 </div>
             </div>
 
-            <!-- Step 1: Concept -->
-            <div class="prompt-step active" id="step1">
-                <h2 class="step-title">What is your book about?</h2>
-                <p class="step-description">Describe the core concept, theme, or story you want to explore.</p>
+            <!-- Phase 1: Concept -->
+            <div class="phase-content active" id="phase1">
+                <h2 class="phase-title">What is your book about?</h2>
+                <p class="phase-description">Describe the core concept, theme, or story you want to explore.</p>
                 
                 <div class="input-group">
                     <textarea 
                         id="conceptInput" 
                         class="prompt-textarea" 
                         placeholder="A detective story set in a world where memories can be traded as currency..."
-                        rows="4"
+                        rows="5"
                     ></textarea>
-                    <span class="char-count">0 / 500</span>
+                    <span class="char-count">0 / 2000</span>
                 </div>
 
                 <div class="suggestion-chips">
-                    <span class="chip" data-prompt="A coming-of-age story about a young witch discovering her powers in a modern city">Young Witch</span>
-                    <span class="chip" data-prompt="A historical fiction about the lost library of Alexandria from the perspective of a scroll keeper">Lost Library</span>
-                    <span class="chip" data-prompt="A sci-fi thriller where dreams are harvested for energy">Dream Harvest</span>
-                    <span class="chip" data-prompt="A romance between two time travelers who keep missing each other">Time Romance</span>
+                    <button class="chip" data-prompt="A coming-of-age story about a young witch discovering her powers in a modern city">Young Witch</button>
+                    <button class="chip" data-prompt="A historical fiction about the lost library of Alexandria from the perspective of a scroll keeper">Lost Library</button>
+                    <button class="chip" data-prompt="A sci-fi thriller where dreams are harvested for energy">Dream Harvest</button>
+                    <button class="chip" data-prompt="A romance between two time travelers who keep missing each other">Time Romance</button>
                 </div>
 
-                <button class="next-btn" onclick="nextStep(2)">Continue</button>
+                <button class="action-btn primary" id="phase1Continue">Continue</button>
             </div>
 
-            <!-- Step 2: Details -->
-            <div class="prompt-step" id="step2">
-                <h2 class="step-title">Refine the details</h2>
-                <p class="step-description">Add specific elements to shape your narrative.</p>
+            <!-- Phase 2: Development (Auto-generated) -->
+            <div class="phase-content" id="phase2">
+                <h2 class="phase-title">Concept Development</h2>
+                <p class="phase-description">Your concept has been refined and structured.</p>
 
-                <div class="detail-grid">
-                    <div class="detail-field">
-                        <label>Genre</label>
-                        <select id="genreSelect" class="detail-select">
-                            <option value="">Select genre...</option>
-                            <option value="fiction">Fiction</option>
-                            <option value="mystery">Mystery</option>
-                            <option value="sci-fi">Science Fiction</option>
-                            <option value="fantasy">Fantasy</option>
-                            <option value="romance">Romance</option>
-                            <option value="thriller">Thriller</option>
-                            <option value="historical">Historical</option>
-                            <option value="horror">Horror</option>
-                        </select>
-                    </div>
-
-                    <div class="detail-field">
-                        <label>Tone</label>
-                        <select id="toneSelect" class="detail-select">
-                            <option value="">Select tone...</option>
-                            <option value="dark">Dark & Gritty</option>
-                            <option value="light">Light & Humorous</option>
-                            <option value="epic">Epic & Sweeping</option>
-                            <option value="intimate">Intimate & Personal</option>
-                            <option value="suspenseful">Suspenseful</option>
-                            <option value="melancholic">Melancholic</option>
-                        </select>
-                    </div>
-
-                    <div class="detail-field">
-                        <label>Target Length</label>
-                        <select id="lengthSelect" class="detail-select">
-                            <option value="">Select length...</option>
-                            <option value="short">Short Story (5-10k words)</option>
-                            <option value="novella">Novella (20-40k words)</option>
-                            <option value="novel">Novel (60-100k words)</option>
-                            <option value="epic">Epic (150k+ words)</option>
-                        </select>
-                    </div>
-
-                    <div class="detail-field">
-                        <label>Point of View</label>
-                        <select id="povSelect" class="detail-select">
-                            <option value="">Select POV...</option>
-                            <option value="first">First Person</option>
-                            <option value="second">Second Person</option>
-                            <option value="third-limited">Third Person Limited</option>
-                            <option value="third-omni">Third Person Omniscient</option>
-                        </select>
+                <div class="development-panel" id="developmentContent">
+                    <!-- AI-generated content loads here -->
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Analyzing your concept...</p>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label>Key Characters or Elements (optional)</label>
-                    <input type="text" id="elementsInput" class="detail-input" placeholder="A reluctant hero, a sentient AI, an ancient curse...">
+                <button class="action-btn primary" id="phase2Continue" style="display: none;">Continue</button>
+            </div>
+
+            <!-- Phase 3: Outline Batches -->
+            <div class="phase-content" id="phase3">
+                <div class="batch-header">
+                    <h2 class="phase-title">Chapter Outline</h2>
+                    <span class="batch-indicator" id="batchIndicator">Batch 1 of 1</span>
+                </div>
+                <p class="phase-description">Review the chapter structure for your book.</p>
+
+                <div class="outline-container" id="outlineContent">
+                    <!-- Outline batches load here -->
                 </div>
 
-                <div class="button-group">
-                    <button class="back-btn" onclick="prevStep(1)">Back</button>
-                    <button class="next-btn" onclick="nextStep(3)">Continue</button>
+                <button class="action-btn primary" id="phase3Continue">Continue</button>
+            </div>
+
+            <!-- Phase 4: Reference Protocol -->
+            <div class="phase-content" id="phase4">
+                <h2 class="phase-title">Reference Protocol</h2>
+                <p class="phase-description">Choose how sources should be handled in your book.</p>
+
+                <div class="audit-summary" id="auditSummary">
+                    <!-- Structural audit loads here (silent Tier 2 applied) -->
+                </div>
+
+                <div class="reference-question">
+                    <p>Does this book require peer-reviewed references?</p>
+                    <div class="button-group">
+                        <button class="action-btn secondary" id="refYes">Yes, include citations</button>
+                        <button class="action-btn secondary" id="refNo">No, authoritative synthesis</button>
+                    </div>
                 </div>
             </div>
 
-            <!-- Step 3: Structure -->
-            <div class="prompt-step" id="step3">
-                <h2 class="step-title">Choose your structure</h2>
-                <p class="step-description">Select how you want your narrative organized.</p>
+            <!-- Phase 6: Chapter Development -->
+            <div class="phase-content" id="phase6">
+                <div class="chapter-header">
+                    <h2 class="phase-title" id="chapterTitle">Chapter 1</h2>
+                    <span class="chapter-indicator" id="chapterIndicator">Chapter 1 of 1</span>
+                </div>
+                <p class="phase-description">Full chapter content with integrated references.</p>
 
-                <div class="structure-options">
-                    <div class="structure-card" data-structure="three-act">
-                        <h3>Three-Act Structure</h3>
-                        <p>Classic setup, confrontation, and resolution. Best for traditional narratives.</p>
-                    </div>
-                    <div class="structure-card" data-structure="hero-journey">
-                        <h3>Hero's Journey</h3>
-                        <p>The monomyth structure. Perfect for epic tales of transformation.</p>
-                    </div>
-                    <div class="structure-card" data-structure="episodic">
-                        <h3>Episodic</h3>
-                        <p>Connected standalone chapters. Great for character studies.</p>
-                    </div>
-                    <div class="structure-card" data-structure="nonlinear">
-                        <h3>Non-linear</h3>
-                        <p>Time jumps and fragmented narrative. For experimental works.</p>
+                <div class="chapter-content" id="chapterContent">
+                    <!-- Chapter content loads here -->
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Developing chapter content...</p>
                     </div>
                 </div>
 
-                <div class="input-group">
-                    <label>Special Requirements (optional)</label>
-                    <textarea id="requirementsInput" class="prompt-textarea" rows="3" placeholder="Include a plot twist at the midpoint, avoid romance subplot, feature multiple timelines..."></textarea>
-                </div>
-
-                <div class="button-group">
-                    <button class="back-btn" onclick="prevStep(2)">Back</button>
-                    <button class="next-btn" onclick="nextStep(4)">Continue</button>
-                </div>
+                <button class="action-btn primary" id="phase6Continue">Continue</button>
             </div>
 
-            <!-- Step 4: Generate -->
-            <div class="prompt-step" id="step4">
-                <h2 class="step-title">Review & Generate</h2>
-                <p class="step-description">Your book blueprint is ready.</p>
-
-                <div class="review-panel">
-                    <div class="review-section">
-                        <h4>Concept</h4>
-                        <p id="reviewConcept">-</p>
+            <!-- Completion -->
+            <div class="phase-content" id="phaseComplete">
+                <div class="completion-state">
+                    <h2 class="phase-title">Your Book is Complete</h2>
+                    <p class="phase-description">The Living Library has generated your full manuscript.</p>
+                    
+                    <div class="book-preview" id="finalPreview">
+                        <!-- Final book preview -->
                     </div>
-                    <div class="review-section">
-                        <h4>Details</h4>
-                        <ul id="reviewDetails">
-                            <li>Genre: <span id="reviewGenre">-</span></li>
-                            <li>Tone: <span id="reviewTone">-</span></li>
-                            <li>Length: <span id="reviewLength">-</span></li>
-                            <li>POV: <span id="reviewPOV">-</span></li>
-                        </ul>
-                    </div>
-                    <div class="review-section">
-                        <h4>Structure</h4>
-                        <p id="reviewStructure">-</p>
-                    </div>
-                </div>
 
-                <div class="prompt-preview">
-                    <label>Generated Prompt</label>
-                    <pre id="generatedPrompt"></pre>
-                </div>
-
-                <div class="button-group">
-                    <button class="back-btn" onclick="prevStep(3)">Back</button>
-                    <button class="generate-btn" onclick="generateBook()">
-                        <span class="btn-text">Create Book</span>
-                        <span class="btn-loading" style="display: none;">Generating...</span>
-                    </button>
-                </div>
-            </div>
-
-            <!-- Loading/Result State -->
-            <div class="prompt-step" id="stepResult">
-                <div class="generation-status">
-                    <div class="spinner"></div>
-                    <h2 id="statusText">Building your book...</h2>
-                    <p id="statusSubtext">This may take a few moments</p>
-                </div>
-                
-                <div class="result-panel" style="display: none;">
-                    <h2>Your book is ready</h2>
-                    <div class="book-preview">
-                        <div class="book-cover" id="bookCover">
-                            <span class="book-title" id="resultTitle">Untitled</span>
-                            <span class="book-author">The Living Library</span>
-                        </div>
-                    </div>
-                    <div class="result-actions">
-                        <button class="action-btn secondary" onclick="resetForm()">Create Another</button>
-                        <button class="action-btn" onclick="saveBook()">Save to Library</button>
+                    <div class="button-group">
+                        <button class="action-btn secondary" onclick="resetCreate()">Create Another</button>
+                        <button class="action-btn primary" onclick="saveToLibrary()">Save to Library</button>
                     </div>
                 </div>
             </div>
