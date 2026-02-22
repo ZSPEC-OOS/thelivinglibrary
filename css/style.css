@@ -327,6 +327,13 @@ body {
     transform: translateY(1px);
 }
 
+a.action-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+}
+
 /* Footer */
 .footer {
     text-align: center;
