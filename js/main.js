@@ -9,6 +9,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchOverlay = document.getElementById('searchOverlay');
     const closeSearch = document.getElementById('closeSearch');
     const visitBtn = document.getElementById('visitBtn');
+    const createBtn = document.getElementById('createBtn');
 
     // Menu Toggle
     menuBtn.addEventListener('click', function() {
@@ -36,7 +37,6 @@ document.addEventListener('DOMContentLoaded', function() {
     searchBtn.addEventListener('click', function() {
         searchOverlay.classList.add('active');
         document.body.style.overflow = 'hidden';
-        // Focus on input after animation
         setTimeout(() => {
             document.querySelector('.search-input').focus();
         }, 100);
@@ -47,7 +47,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.body.style.overflow = '';
     });
 
-    // Close search on Escape key
+    // Close on Escape key
     document.addEventListener('keydown', function(e) {
         if (e.key === 'Escape') {
             if (searchOverlay.classList.contains('active')) {
@@ -62,25 +62,24 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Visit Button - Currently placeholder
+    // Visit Button
     visitBtn.addEventListener('click', function() {
         const subjects = document.getElementById('subjects');
         const literatureType = document.getElementById('literature-type');
         
-        // Visual feedback
-        visitBtn.style.transform = 'scale(0.95)';
-        setTimeout(() => {
-            visitBtn.style.transform = '';
-        }, 150);
-
-        // Placeholder functionality
         console.log('Visit clicked - Subjects:', subjects.value, 'Type:', literatureType.value);
-        
-        // You can add navigation logic here later
-        // window.location.href = '/collection';
+        // Add navigation logic here
+        // window.location.href = '/visit';
     });
 
-    // Populate dropdowns with sample data (can be replaced with actual data later)
+    // Create Button
+    createBtn.addEventListener('click', function() {
+        console.log('Create clicked');
+        // Add create logic here
+        // window.location.href = '/create';
+    });
+
+    // Populate dropdowns
     const subjectsData = [
         'Fiction',
         'Non-Fiction',
@@ -128,8 +127,6 @@ document.addEventListener('DOMContentLoaded', function() {
         const query = searchInput.value.trim();
         if (query) {
             console.log('Searching for:', query);
-            // Add search logic here
-            // window.location.href = `/search?q=${encodeURIComponent(query)}`;
         }
     });
 
@@ -137,26 +134,5 @@ document.addEventListener('DOMContentLoaded', function() {
         if (e.key === 'Enter') {
             searchSubmit.click();
         }
-    });
-
-    // Touch device detection for enhanced mobile experience
-    const isTouchDevice = window.matchMedia('(pointer: coarse)').matches;
-    
-    if (isTouchDevice) {
-        document.body.classList.add('touch-device');
-    }
-
-    // Smooth scroll behavior for anchor links
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function(e) {
-            e.preventDefault();
-            const target = document.querySelector(this.getAttribute('href'));
-            if (target) {
-                target.scrollIntoView({
-                    behavior: 'smooth',
-                    block: 'start'
-                });
-            }
-        });
     });
 });
