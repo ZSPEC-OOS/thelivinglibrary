@@ -368,10 +368,17 @@ body {
     pointer-events: none;
 }
 
-/* Visit Button */
-.visit-btn {
-    margin-top: 1rem;
-    padding: 1.25rem 2rem;
+/* Buttons Container */
+.buttons-container {
+    display: flex;
+    gap: 1rem;
+    margin-top: 0.5rem;
+}
+
+/* Action Buttons */
+.action-btn {
+    flex: 1;
+    padding: 1.25rem 1.5rem;
     font-size: 1rem;
     font-family: var(--font-sans);
     text-transform: uppercase;
@@ -383,9 +390,13 @@ body {
     transition: var(--transition);
 }
 
-.visit-btn:hover {
+.action-btn:hover {
     background: var(--color-bg-secondary);
     border-color: var(--color-border-hover);
+}
+
+.action-btn:active {
+    transform: translateY(1px);
 }
 
 /* Footer */
@@ -421,6 +432,15 @@ body {
     .search-input {
         font-size: 1.25rem;
     }
+
+    .buttons-container {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+
+    .action-btn {
+        padding: 1rem;
+    }
 }
 
 @media (max-width: 480px) {
@@ -433,8 +453,9 @@ body {
         padding: 1.5rem;
     }
 
-    .visit-btn {
+    .action-btn {
         font-size: 0.9rem;
+        letter-spacing: 0.1em;
     }
 }
 
