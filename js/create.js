@@ -8,7 +8,9 @@ let bookData = {
     referenceProtocol: false,
     chapters: [],
     currentBatch: 0,
-    currentChapter: 0
+    currentChapter: 0,
+    sessionId: null,
+    compiledMarkdown: ''
 };
 
 // Phase configurations
@@ -126,7 +128,7 @@ function proceedToPhase(phase) {
             loadChapter(0);
             break;
         case 'complete':
-            showFinalPreview();
+            showFinalBook();
             break;
     }
     
@@ -309,16 +311,108 @@ async function loadChapter(chapterIndex) {
     continueBtn.textContent = chapterIndex < bookData.outline.length - 1 ? 'Continue' : 'Complete Book';
 }
 
-// Completion
-function showFinalPreview() {
-    const container = document.getElementById('finalPreview');
-    container.innerHTML = `
-        <span class="book-title">${bookData.development?.title || 'Untitled'}</span>
-        <span class="book-author">The Living Library</span>
-    `;
+// Compile all content into markdown
+function compileBook() {
+    const dev = bookData.development;
+    const chapters = bookData.chapters;
+    
+    let md = `# ${dev.title}\n\n`;
+    md += `*${dev.genre} | ${dev.audience}*\n\n`;
+    md += `---\n\n`;
+    md += `## Premise\n\n${dev.premise}\n\n`;
+    md += `## Core Thesis\n\n${dev.thesis}\n\n`;
+    md += `---\n\n`;
+    
+    // Table of Contents
+    md += `## Contents\n\n`;
+    bookData.outline.forEach((ch, i) => {
+        md += `${i + 1}. [${ch.title}](#chapter-${i + 1})\n`;
+    });
+    md += `\n---\n\n`;
+    
+    // Chapters
+    chapters.forEach((ch, i) => {
+        const outline = bookData.outline[i];
+        md += `<a id="chapter-${i + 1}"></a>\n\n`;
+        md += `# Chapter ${i + 1}: ${outline.title}\n\n`;
+        
+        if (ch.hasReferences && ch.references) {
+            md += `*References available at chapter end*\n\n`;
+        }
+        
+        md += `${ch.content}\n\n`;
+        
+        if (ch.hasReferences && ch.references) {
+            md += `## References\n\n${ch.references}\n\n`;
+        }
+        
+        md += `---\n\n`;
+    });
+    
+    return md;
 }
 
+// Simple markdown to HTML converter
+function markdownToHTML(md) {
+    return md
+        // Headers
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        // Bold/Italic
+        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+        .replace(/\*(.*)\*/gim, '<em>$1</em>')
+        // Blockquotes
+        .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2">$1</a>')
+        // Line breaks
+        .replace(/\n\n/gim, '</p><p>')
+        // Wrap in paragraphs
+        .replace(/^(?!<[h|b|p|u|o|l])(.*$)/gim, '<p>$1</p>')
+        // Cleanup empty paragraphs
+        .replace(/<p><\/p>/gim, '')
+        // Horizontal rules
+        .replace(/^---$/gim, '<hr>');
+}
+
+// Show final book
+function showFinalBook() {
+    const container = document.getElementById('bookContent');
+    const title = document.getElementById('finalTitle');
+    
+    // Compile markdown
+    const md = compileBook();
+    bookData.compiledMarkdown = md; // Store for later
+    
+    // Convert to HTML and display
+    title.textContent = bookData.development.title;
+    container.innerHTML = markdownToHTML(md);
+}
+
+// Publish function
+function publishBook() {
+    // Show publishing status
+    const btn = document.querySelector('.viewer-actions .action-btn.primary');
+    const originalText = btn.textContent;
+    btn.textContent = 'Publishing...';
+    btn.disabled = true;
+    
+    // Simulate publish (replace with actual API call)
+    setTimeout(() => {
+        alert(`"${bookData.development.title}" has been published to The Living Library!`);
+        btn.textContent = 'Published';
+        btn.style.background = 'var(--color-bg-tertiary)';
+        
+        // Here you would send to backend:
+        // saveToLibrary(bookData);
+    }, 1500);
+}
+
+// Reset
 function resetCreate() {
+    if (!confirm('Start a new book? Current progress will be lost.')) return;
+    
     bookData = {
         concept: '',
         development: null,
@@ -326,21 +420,21 @@ function resetCreate() {
         referenceProtocol: false,
         chapters: [],
         currentBatch: 0,
-        currentChapter: 0
+        currentChapter: 0,
+        sessionId: null,
+        compiledMarkdown: ''
     };
     
     document.getElementById('conceptInput').value = '';
     document.querySelector('.char-count').textContent = '0 / 2000';
     
-    document.querySelectorAll('.step').forEach(s => s.classList.remove('active', 'completed'));
+    // Reset progress bar
+    document.querySelectorAll('.step').forEach(s => {
+        s.classList.remove('active', 'completed');
+    });
     document.querySelector('.step[data-phase="1"]').classList.add('active');
     
     proceedToPhase(1);
-}
-
-function saveToLibrary() {
-    alert('Book saved to your library!');
-    // AI INTEGRATION: Save complete bookData to your backend
 }
 
 // Utility
@@ -372,7 +466,9 @@ function generateMockChapter(chapter, number) {
     return {
         content: `<p>Chapter ${number} content would appear here, fully developed with ${bookData.referenceProtocol ? 'inline citations' : 'authoritative synthesis'}...</p>
                   <p>The narrative unfolds with careful attention to the established outline: ${chapter.purpose}</p>
-                  <p>[Full chapter prose generated by AI based on your prompt]</p>`
+                  <p>[Full chapter prose generated by AI based on your prompt]</p>`,
+        hasReferences: bookData.referenceProtocol,
+        references: bookData.referenceProtocol ? '1. Author, A. Title. Journal. 2024;1:1-10.' : null
     };
 }
 
@@ -383,7 +479,7 @@ async function callAIService(params) {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-            prompt: YOUR_PROMPT_HERE, // The 6-phase prompt you provided
+            prompt: YOUR_PROMPT_HERE,
             phase: params.phase,
             data: params
         })
