@@ -1,4 +1,4 @@
-// Create Page Logic - Claude 3.5 Sonnet Integration
+// Create Page Logic - Claude Sonnet 4.6 with Prompt Caching (90% off!)
 const API_URL = 'https://book-api-tg19.onrender.com/api/develop';
 
 let currentPhase = 1;
@@ -152,7 +152,7 @@ function updateProgressBar(phase) {
     });
 }
 
-// Phase 2: Load Development (Claude 3.5 Sonnet)
+// Phase 2: Load Development (Sonnet 4.6 + Cached)
 async function loadDevelopment() {
     const container = document.getElementById('developmentContent');
     const continueBtn = document.getElementById('phase2Continue');
@@ -160,8 +160,9 @@ async function loadDevelopment() {
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Consulting Claude 3.5 Sonnet...</p>
-            <p style="font-size: 0.875rem; margin-top: 0.5rem;">This may take 10-20 seconds</p>
+            <p>Consulting Claude Sonnet 4.6...</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Using cached prompts (90% cost savings)</p>
+            <p style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--color-text-muted);">This may take 15-30 seconds</p>
         </div>
     `;
     continueBtn.style.display = 'none';
@@ -211,7 +212,7 @@ async function loadDevelopment() {
     }
 }
 
-// Phase 3: Load Outline Batch (Claude 3.5 Sonnet)
+// Phase 3: Load Outline Batch (Sonnet 4.6 + Cached)
 async function loadOutlineBatch(batchIndex) {
     const container = document.getElementById('outlineContent');
     const indicator = document.getElementById('batchIndicator');
@@ -222,8 +223,9 @@ async function loadOutlineBatch(batchIndex) {
         container.innerHTML = `
             <div class="loading-state">
                 <div class="spinner"></div>
-                <p>Generating chapter outline with Claude 3.5 Sonnet...</p>
-                <p style="font-size: 0.875rem;">This may take 15-30 seconds</p>
+                <p>Generating chapter outline with Claude Sonnet 4.6...</p>
+                <p style="font-size: 0.875rem;">Cached prompts active (90% savings)</p>
+                <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 20-40 seconds</p>
             </div>
         `;
         
@@ -280,15 +282,16 @@ function totalBatches() {
     return Math.ceil(bookData.outline.length / 5);
 }
 
-// Phase 4: Show Audit Summary (Claude 3.5 Sonnet)
+// Phase 4: Show Audit Summary (Sonnet 4.6 + Cached)
 async function showAuditSummary() {
     const container = document.getElementById('auditSummary');
     
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Running structural audit with Claude 3.5 Sonnet...</p>
-            <p style="font-size: 0.875rem;">This may take 10-15 seconds</p>
+            <p>Running structural audit with Claude Sonnet 4.6...</p>
+            <p style="font-size: 0.875rem;">Cached prompts active</p>
+            <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 15-25 seconds</p>
         </div>
     `;
     
@@ -328,7 +331,7 @@ async function showAuditSummary() {
     }
 }
 
-// Phase 6: Load Chapter (Claude 3.5 Sonnet)
+// Phase 6: Load Chapter (Sonnet 4.6 + Cached)
 async function loadChapter(chapterIndex) {
     const container = document.getElementById('chapterContent');
     const title = document.getElementById('chapterTitle');
@@ -344,8 +347,9 @@ async function loadChapter(chapterIndex) {
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Claude 3.5 Sonnet is writing Chapter ${chapterIndex + 1}...</p>
-            <p style="font-size: 0.875rem; margin-top: 0.5rem;">This may take 20-40 seconds</p>
+            <p>Claude Sonnet 4.6 is writing Chapter ${chapterIndex + 1}...</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Cached prompts active (90% cost savings)</p>
+            <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 30-60 seconds per chapter</p>
         </div>
     `;
     
