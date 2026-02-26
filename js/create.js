@@ -1,4 +1,4 @@
-// Create Page Logic - Claude Sonnet 4.6 with Prompt Caching (90% off!)
+// Create Page Logic - Full Claude API + Firebase Integration
 const API_URL = 'https://book-api-tg19.onrender.com/api/develop';
 
 let currentPhase = 1;
@@ -152,7 +152,7 @@ function updateProgressBar(phase) {
     });
 }
 
-// Phase 2: Load Development (Sonnet 4.6 + Cached)
+// Phase 2: Load Development (Claude API)
 async function loadDevelopment() {
     const container = document.getElementById('developmentContent');
     const continueBtn = document.getElementById('phase2Continue');
@@ -162,7 +162,7 @@ async function loadDevelopment() {
             <div class="spinner"></div>
             <p>Consulting Claude Sonnet 4.6...</p>
             <p style="font-size: 0.875rem; margin-top: 0.5rem;">Using cached prompts (90% cost savings)</p>
-            <p style="font-size: 0.75rem; margin-top: 0.25rem; color: var(--color-text-muted);">This may take 15-30 seconds</p>
+            <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 15-30 seconds</p>
         </div>
     `;
     continueBtn.style.display = 'none';
@@ -212,7 +212,7 @@ async function loadDevelopment() {
     }
 }
 
-// Phase 3: Load Outline Batch (Sonnet 4.6 + Cached)
+// Phase 3: Load Outline Batch (Claude API)
 async function loadOutlineBatch(batchIndex) {
     const container = document.getElementById('outlineContent');
     const indicator = document.getElementById('batchIndicator');
@@ -282,7 +282,7 @@ function totalBatches() {
     return Math.ceil(bookData.outline.length / 5);
 }
 
-// Phase 4: Show Audit Summary (Sonnet 4.6 + Cached)
+// Phase 4: Show Audit Summary (Claude API)
 async function showAuditSummary() {
     const container = document.getElementById('auditSummary');
     
@@ -331,7 +331,7 @@ async function showAuditSummary() {
     }
 }
 
-// Phase 6: Load Chapter (Sonnet 4.6 + Cached)
+// Phase 6: Load Chapter (Claude API)
 async function loadChapter(chapterIndex) {
     const container = document.getElementById('chapterContent');
     const title = document.getElementById('chapterTitle');
@@ -459,20 +459,66 @@ function showFinalBook() {
     container.innerHTML = markdownToHTML(md);
 }
 
-// Publish function
+// Publish to Firebase
 function publishBook() {
     const btn = document.querySelector('.viewer-actions .action-btn.primary');
     if (!btn) return;
     
-    const originalText = btn.textContent;
     btn.textContent = 'Publishing...';
     btn.disabled = true;
     
-    setTimeout(() => {
-        alert(`"${bookData.development?.title || 'Your Book'}" has been published to The Living Library!`);
-        btn.textContent = 'Published';
-        btn.style.background = 'var(--color-bg-tertiary)';
-    }, 1500);
+    // Generate summary for cover (first 150 chars of premise + ellipsis)
+    const fullPremise = bookData.development?.premise || '';
+    const summary = fullPremise.length > 150 
+        ? fullPremise.substring(0, 150) + '...' 
+        : fullPremise;
+    
+    // Create book object for Firebase
+    const newBook = {
+        title: bookData.development?.title || 'Untitled',
+        genre: mapGenre(bookData.development?.genre || 'Fiction'),
+        chapters: bookData.outline?.length || 0,
+        description: bookData.development?.premise || 'No description',
+        summary: summary,
+        content: compileBook(),
+        fullContent: document.getElementById('bookContent').innerHTML,
+        referenceProtocol: bookData.referenceProtocol,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    
+    // Save to Firebase
+    db.collection('books').add(newBook)
+        .then((docRef) => {
+            console.log('Book published with ID:', docRef.id);
+            
+            alert(`"${newBook.title}" has been published to The Living Library!`);
+            btn.textContent = 'Published';
+            
+            setTimeout(() => {
+                if (confirm('Go to Browse Collection to see your book?')) {
+                    window.location.href = 'visit.html';
+                }
+            }, 500);
+        })
+        .catch((error) => {
+            console.error('Error publishing:', error);
+            alert('Error publishing book: ' + error.message);
+            btn.textContent = 'Publish Book';
+            btn.disabled = false;
+        });
+}
+
+// Helper to normalize genre names
+function mapGenre(genreString) {
+    const genre = (genreString || '').toLowerCase();
+    if (genre.includes('sci-fi') || genre.includes('science')) return 'sci-fi';
+    if (genre.includes('fantasy')) return 'fantasy';
+    if (genre.includes('mystery')) return 'mystery';
+    if (genre.includes('romance')) return 'romance';
+    if (genre.includes('horror')) return 'horror';
+    if (genre.includes('non-fiction') || genre.includes('nonfiction')) return 'non-fiction';
+    if (genre.includes('thriller')) return 'thriller';
+    return 'literary';
 }
 
 // Reset
