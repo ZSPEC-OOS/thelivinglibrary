@@ -1,11 +1,11 @@
 // Firebase configuration - REPLACE WITH YOUR CONFIG
 const firebaseConfig = {
-  apiKey: "YOUR_API_KEY",
-  authDomain: "your-project.firebaseapp.com",
-  projectId: "your-project-id",
-  storageBucket: "your-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "your-app-id"
+  apiKey: "AIzaSyAZGAKEw0s684M6ZenPHUlF4wgl59AAVFs",
+  authDomain: "thelivinglibrary-aa376.firebaseapp.com",
+  projectId: "thelivinglibrary-aa376",
+  storageBucket: "thelivinglibrary-aa376.firebasestorage.app",
+  messagingSenderId: "49786538430",
+  appId: "1:49786538430:web:f1f29ed21f83ba5f4411ef"
 };
 
 // Initialize Firebase
