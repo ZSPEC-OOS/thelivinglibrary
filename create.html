@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Create - The Living Library</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.PNG">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/create.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
     <!-- Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
@@ -48,7 +52,7 @@
             <button class="close-btn" id="closeMenu" aria-label="Close menu">×</button>
             <ul class="nav-list">
                 <li><a href="index.html" class="nav-link">Home</a></li>
-                <li><a href="#" class="nav-link">Browse Collection</a></li>
+                <li><a href="visit.html" class="nav-link">Browse Collection</a></li>
                 <li><a href="#" class="nav-link">Subjects</a></li>
                 <li><a href="#" class="nav-link">Types</a></li>
                 <li><a href="create.html" class="nav-link active">Create</a></li>
@@ -70,7 +74,7 @@
     <main class="create-main">
         <div class="create-container">
             
-            <!-- Progress Bar -->
+            <!-- 6-Step Progress Bar -->
             <div class="progress-bar" id="progressBar">
                 <div class="step active" data-phase="1">
                     <span class="step-number">1</span>
@@ -86,10 +90,14 @@
                 </div>
                 <div class="step" data-phase="4">
                     <span class="step-number">4</span>
-                    <span class="step-label">Reference</span>
+                    <span class="step-label">Audit</span>
+                </div>
+                <div class="step" data-phase="5">
+                    <span class="step-number">5</span>
+                    <span class="step-label">References</span>
                 </div>
                 <div class="step" data-phase="6">
-                    <span class="step-number">5</span>
+                    <span class="step-number">6</span>
                     <span class="step-label">Chapters</span>
                 </div>
             </div>
@@ -119,51 +127,85 @@
                 <button class="action-btn primary" id="phase1Continue">Continue</button>
             </div>
 
-            <!-- Phase 2: Development (Auto-generated) -->
+            <!-- Phase 2: Concept Development -->
             <div class="phase-content" id="phase2">
                 <h2 class="phase-title">Concept Development</h2>
-                <p class="phase-description">Your concept has been refined and structured.</p>
+                <p class="phase-description">Your concept has been refined and structured by Claude Sonnet 4.6.</p>
 
-                <div class="development-panel" id="developmentContent">
-                    <!-- AI-generated content loads here -->
+                <div class="development-grid" id="developmentContent">
                     <div class="loading-state">
                         <div class="spinner"></div>
                         <p>Analyzing your concept...</p>
                     </div>
                 </div>
 
+                <div class="phase-note">
+                    <p>Review the development above. Click Continue when ready to proceed to outline generation.</p>
+                </div>
+
                 <button class="action-btn primary" id="phase2Continue" style="display: none;">Continue</button>
             </div>
 
-            <!-- Phase 3: Outline Batches -->
+            <!-- Phase 3: Outline -->
             <div class="phase-content" id="phase3">
                 <div class="batch-header">
-                    <h2 class="phase-title">Chapter Outline</h2>
-                    <span class="batch-indicator" id="batchIndicator">Batch 1 of 1</span>
+                    <h2 class="phase-title">Chapter-by-Chapter Outline</h2>
+                    <span class="batch-indicator" id="batchIndicator">Complete Outline</span>
                 </div>
-                <p class="phase-description">Review the chapter structure for your book.</p>
+                <p class="phase-description">Detailed architecture of your book with full chapter specifications.</p>
 
-                <div class="outline-container" id="outlineContent">
-                    <!-- Outline batches load here -->
+                <div class="outline-container detailed" id="outlineContent">
+                    <!-- Outline loads here -->
+                </div>
+
+                <div class="phase-note">
+                    <p>Review the complete outline. Click Continue to proceed to structural audit.</p>
                 </div>
 
                 <button class="action-btn primary" id="phase3Continue">Continue</button>
             </div>
 
-            <!-- Phase 4: Reference Protocol -->
+            <!-- Phase 4: Structural Audit -->
             <div class="phase-content" id="phase4">
-                <h2 class="phase-title">Reference Protocol</h2>
-                <p class="phase-description">Choose how sources should be handled in your book.</p>
+                <h2 class="phase-title">Structural Audit</h2>
+                <p class="phase-description">Analysis of pacing, balance, arc integrity, and revision recommendations.</p>
 
-                <div class="audit-summary" id="auditSummary">
-                    <!-- Structural audit loads here (silent Tier 2 applied) -->
+                <div class="audit-container" id="auditContent">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p>Auditing structure...</p>
+                    </div>
                 </div>
 
-                <div class="reference-question">
-                    <p>Does this book require peer-reviewed references?</p>
-                    <div class="button-group">
-                        <button class="action-btn secondary" id="refYes">Yes, include citations</button>
-                        <button class="action-btn secondary" id="refNo">No, authoritative synthesis</button>
+                <div class="phase-note">
+                    <p>Tier 1 changes will be applied automatically. Tier 2 changes require your approval. Click Continue to proceed.</p>
+                </div>
+
+                <button class="action-btn primary" id="phase4Continue">Continue</button>
+            </div>
+
+            <!-- Phase 5: Reference Protocol (Auto-proceed) -->
+            <div class="phase-content" id="phase5">
+                <h2 class="phase-title">Reference Protocol</h2>
+                <p class="phase-description">Determine citation requirements for your book.</p>
+
+                <div class="reference-question" id="referenceQuestion">
+                    <div class="protocol-box">
+                        <p class="protocol-text">Does this book require peer-reviewed references in the development of its content?</p>
+                        <p class="protocol-subtext">This will determine whether chapter content is developed against primary literature with ACS-format citations, or structured as authoritative synthesis without inline citation apparatus.</p>
+                        
+                        <div class="button-group">
+                            <button class="action-btn secondary" id="refYes">Yes, include citations</button>
+                            <button class="action-btn secondary" id="refNo">No, authoritative synthesis</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Selection confirmation (shows briefly then auto-proceeds) -->
+                <div class="selection-confirmation" id="selectionConfirmation" style="display: none;">
+                    <div class="loading-state">
+                        <div class="spinner"></div>
+                        <p id="selectionText">Preparing chapter development...</p>
                     </div>
                 </div>
             </div>
@@ -177,17 +219,18 @@
                 <p class="phase-description">Full chapter content with integrated references.</p>
 
                 <div class="chapter-content" id="chapterContent">
-                    <!-- Chapter content loads here -->
                     <div class="loading-state">
                         <div class="spinner"></div>
                         <p>Developing chapter content...</p>
                     </div>
                 </div>
 
-                <button class="action-btn primary" id="phase6Continue">Continue</button>
+                <div class="chapter-controls">
+                    <button class="action-btn primary" id="phase6Continue">Continue to Next Chapter</button>
+                </div>
             </div>
 
-                        <!-- Phase Complete: View Book -->
+            <!-- Phase Complete -->
             <div class="phase-content" id="phaseComplete">
                 <div class="book-viewer">
                     <div class="viewer-header">
