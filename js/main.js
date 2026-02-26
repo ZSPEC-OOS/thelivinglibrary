@@ -63,11 +63,9 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     // Visit Button
-    visitBtn.addEventListener('click', function() {
-        console.log('Visit clicked');
-        // Add navigation logic here
-        // window.location.href = '/visit';
-    });
+visitBtn.addEventListener('click', function() {
+    window.location.href = 'visit.html';
+});
 
     // Create Button
     createBtn.addEventListener('click', function() {
