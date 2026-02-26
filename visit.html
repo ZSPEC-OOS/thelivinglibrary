@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Collection - The Living Library</title>
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.PNG">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/visit.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Background -->
+    <div class="background-container">
+        <div class="background-image" style="opacity: 0.3;"></div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <button class="menu-btn" id="menuBtn" aria-label="Open menu">
+            <span class="hamburger"></span>
+            <span class="hamburger"></span>
+            <span class="hamburger"></span>
+        </button>
+        
+        <div class="logo-container">
+            <a href="index.html">
+                <img src="assets/TTLheaderlogotransparent.png" alt="The Living Library" class="header-logo">
+            </a>
+        </div>
+        
+        <button class="search-btn" id="searchBtn" aria-label="Search">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="11" cy="11" r="8"></circle>
+                <path d="m21 21-4.35-4.35"></path>
+            </svg>
+        </button>
+    </header>
+
+    <!-- Navigation Menu -->
+    <nav class="nav-menu" id="navMenu">
+        <div class="nav-content">
+            <button class="close-btn" id="closeMenu" aria-label="Close menu">×</button>
+            <ul class="nav-list">
+                <li><a href="index.html" class="nav-link">Home</a></li>
+                <li><a href="visit.html" class="nav-link active">Browse Collection</a></li>
+                <li><a href="#" class="nav-link">Subjects</a></li>
+                <li><a href="#" class="nav-link">Types</a></li>
+                <li><a href="create.html" class="nav-link">Create</a></li>
+                <li><a href="#" class="nav-link">About</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Search Overlay -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-container">
+            <button class="close-btn" id="closeSearch" aria-label="Close search">×</button>
+            <input type="text" class="search-input" placeholder="Search the library..." autofocus>
+            <button class="search-submit">Search</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="visit-main">
+        <div class="visit-header">
+            <h1 class="visit-title">The Collection</h1>
+            <p class="visit-subtitle">Discover volumes crafted by Claude Sonnet 4.6</p>
+            
+            <!-- Filter/Search Bar -->
+            <div class="filter-bar">
+                <div class="filter-group">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="opacity: 0.5;">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <path d="m21 21-4.35-4.35"></path>
+                    </svg>
+                    <input type="text" class="filter-input" id="searchInput" placeholder="Search titles...">
+                </div>
+                
+                <select class="filter-select" id="genreFilter">
+                    <option value="all">All Genres</option>
+                    <option value="sci-fi">Science Fiction</option>
+                    <option value="fantasy">Fantasy</option>
+                    <option value="mystery">Mystery</option>
+                    <option value="romance">Romance</option>
+                    <option value="horror">Horror</option>
+                    <option value="non-fiction">Non-Fiction</option>
+                    <option value="thriller">Thriller</option>
+                </select>
+
+                <select class="filter-select" id="sortFilter">
+                    <option value="newest">Newest First</option>
+                    <option value="oldest">Oldest First</option>
+                    <option value="longest">Longest</option>
+                    <option value="shortest">Shortest</option>
+                </select>
+            </div>
+
+            <div class="results-count" id="resultsCount">Showing 12 volumes</div>
+        </div>
+
+        <!-- Book Grid -->
+        <div class="book-grid" id="bookGrid">
+            <!-- Books injected by JavaScript -->
+        </div>
+
+        <!-- Empty State -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📚</div>
+            <h3>No books found</h3>
+            <p>Try adjusting your search or filters</p>
+            <button class="action-btn" onclick="resetFilters()">Clear Filters</button>
+        </div>
+
+        <!-- Loading State -->
+        <div class="loading-grid" id="loadingGrid" style="display: none;">
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+            <div class="skeleton-card"></div>
+        </div>
+    </main>
+
+    <!-- Book Reader Modal -->
+    <div class="book-modal" id="bookModal">
+        <div class="modal-backdrop" onclick="closeModal()"></div>
+        <div class="modal-content">
+            <button class="modal-close" onclick="closeModal()" aria-label="Close book">×</button>
+            
+            <div class="modal-header">
+                <div class="modal-meta">
+                    <span class="modal-genre" id="modalGenre">Genre</span>
+                    <h2 class="modal-title" id="modalTitle">Book Title</h2>
+                    <p class="modal-subtitle" id="modalSubtitle">Genre | Audience</p>
+                </div>
+                <div class="modal-actions">
+                    <button class="action-btn secondary" onclick="downloadBook()">Download</button>
+                    <button class="action-btn" onclick="shareBook()">Share</button>
+                </div>
+            </div>
+
+            <div class="modal-body" id="modalBody">
+                <!-- Book content loads here -->
+            </div>
+        </div>
+    </div>
+
+    <footer class="footer">
+        <p>&copy; 2026 The Living Library. All rights reserved.</p>
+    </footer>
+
+    <script src="js/main.js"></script>
+    <script src="js/visit.js"></script>
+</body>
+</html>
