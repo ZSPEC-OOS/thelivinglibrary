@@ -1,4 +1,4 @@
-// Create Page Logic - Full Claude API Integration
+// Create Page Logic - Claude 3.5 Sonnet Integration
 const API_URL = 'https://book-api-tg19.onrender.com/api/develop';
 
 let currentPhase = 1;
@@ -152,7 +152,7 @@ function updateProgressBar(phase) {
     });
 }
 
-// Phase 2: Load Development (Claude API)
+// Phase 2: Load Development (Claude 3.5 Sonnet)
 async function loadDevelopment() {
     const container = document.getElementById('developmentContent');
     const continueBtn = document.getElementById('phase2Continue');
@@ -160,53 +160,25 @@ async function loadDevelopment() {
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Step 1/3: Sending request to API...</p>
+            <p>Consulting Claude 3.5 Sonnet...</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">This may take 10-20 seconds</p>
         </div>
     `;
     continueBtn.style.display = 'none';
 
     try {
-        console.log('🚀 Sending request to:', API_URL);
-        console.log('📦 Payload:', { phase: 2, data: { concept: bookData.concept.substring(0, 50) + '...' } });
-
-        // Add timeout to fetch
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
-        
         const response = await fetch(API_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
                 phase: 2,
                 data: { concept: bookData.concept }
-            }),
-            signal: controller.signal
+            })
         });
-        
-        clearTimeout(timeoutId);
-        
-        console.log('✅ Got response:', response.status);
-        
-        container.innerHTML = `
-            <div class="loading-state">
-                <div class="spinner"></div>
-                <p>Step 2/3: Parsing response...</p>
-            </div>
-        `;
 
         const result = await response.json();
-        console.log('📄 Parsed result:', result);
         
-        if (!result.success) {
-            throw new Error(result.error || 'Unknown API error');
-        }
-
-        container.innerHTML = `
-            <div class="loading-state">
-                <div class="spinner"></div>
-                <p>Step 3/3: Displaying results...</p>
-            </div>
-        `;
+        if (!result.success) throw new Error(result.error);
 
         bookData.development = result.data;
         bookData.sessionId = result.sessionId;
@@ -232,33 +204,14 @@ async function loadDevelopment() {
         `;
         
         continueBtn.style.display = 'inline-flex';
-        console.log('🎉 Phase 2 complete!');
         
     } catch (err) {
-        console.error('❌ Error in loadDevelopment:', err);
-        console.error('Error name:', err.name);
-        console.error('Error message:', err.message);
-        
-        let errorMsg = err.message;
-        if (err.name === 'AbortError') {
-            errorMsg = 'Request timed out (30 seconds). The API is taking too long to respond.';
-        } else if (err.message.includes('Failed to fetch')) {
-            errorMsg = 'Cannot connect to API. Check if backend is running.';
-        }
-        
-        container.innerHTML = `
-            <div style="color: #ff4444; padding: 2rem; border: 1px solid #ff4444;">
-                <h3 style="margin-bottom: 1rem;">Error Occurred</h3>
-                <p><strong>Type:</strong> ${err.name}</p>
-                <p><strong>Message:</strong> ${errorMsg}</p>
-                <p style="margin-top: 1rem; font-size: 0.875rem; color: #888;">
-                    Check browser console (F12) for more details.
-                </p>
-            </div>
-        `;
+        console.error(err);
+        container.innerHTML = `<p style="color: #ff4444; padding: 2rem;">Error: ${err.message}</p>`;
     }
 }
-// Phase 3: Load Outline Batch (Claude API)
+
+// Phase 3: Load Outline Batch (Claude 3.5 Sonnet)
 async function loadOutlineBatch(batchIndex) {
     const container = document.getElementById('outlineContent');
     const indicator = document.getElementById('batchIndicator');
@@ -269,7 +222,8 @@ async function loadOutlineBatch(batchIndex) {
         container.innerHTML = `
             <div class="loading-state">
                 <div class="spinner"></div>
-                <p>Generating chapter outline with Claude Opus 4.6...</p>
+                <p>Generating chapter outline with Claude 3.5 Sonnet...</p>
+                <p style="font-size: 0.875rem;">This may take 15-30 seconds</p>
             </div>
         `;
         
@@ -326,14 +280,15 @@ function totalBatches() {
     return Math.ceil(bookData.outline.length / 5);
 }
 
-// Phase 4: Show Audit Summary (Claude API)
+// Phase 4: Show Audit Summary (Claude 3.5 Sonnet)
 async function showAuditSummary() {
     const container = document.getElementById('auditSummary');
     
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Running structural audit with Claude Opus 4.6...</p>
+            <p>Running structural audit with Claude 3.5 Sonnet...</p>
+            <p style="font-size: 0.875rem;">This may take 10-15 seconds</p>
         </div>
     `;
     
@@ -365,7 +320,6 @@ async function showAuditSummary() {
         
     } catch (err) {
         console.error(err);
-        // Fallback display
         container.innerHTML = `
             <p><strong>Structural Audit Complete</strong></p>
             <p>Pacing: Verified | Balance: Adjusted | Arc: Intact</p>
@@ -374,7 +328,7 @@ async function showAuditSummary() {
     }
 }
 
-// Phase 6: Load Chapter (Claude API)
+// Phase 6: Load Chapter (Claude 3.5 Sonnet)
 async function loadChapter(chapterIndex) {
     const container = document.getElementById('chapterContent');
     const title = document.getElementById('chapterTitle');
@@ -390,8 +344,8 @@ async function loadChapter(chapterIndex) {
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Claude Opus 4.6 is writing Chapter ${chapterIndex + 1}...</p>
-            <p style="font-size: 0.875rem; margin-top: 0.5rem;">This may take 30-60 seconds</p>
+            <p>Claude 3.5 Sonnet is writing Chapter ${chapterIndex + 1}...</p>
+            <p style="font-size: 0.875rem; margin-top: 0.5rem;">This may take 20-40 seconds</p>
         </div>
     `;
     
@@ -542,9 +496,4 @@ function resetCreate() {
     document.querySelector('.step[data-phase="1"]').classList.add('active');
     
     proceedToPhase(1);
-}
-
-// Utility
-function simulateDelay(ms) {
-    return new Promise(resolve => setTimeout(resolve, ms));
 }
