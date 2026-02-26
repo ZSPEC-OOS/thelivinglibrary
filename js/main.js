@@ -67,11 +67,9 @@ visitBtn.addEventListener('click', function() {
     window.location.href = 'visit.html';
 });
 
-    // Create Button
+        // Create Button
     createBtn.addEventListener('click', function() {
-        console.log('Create clicked');
-        // Add create logic here
-        // window.location.href = '/create';
+        window.location.href = 'create.html';
     });
 
     // Search functionality
