@@ -81,7 +81,8 @@ function setupEventListeners() {
     });
 
     document.getElementById('phase6Continue').addEventListener('click', () => {
-        if (bookData.currentChapter < bookData.outline.chapters.length - 1) {
+        const totalChapters = bookData.outline?.chapters?.length || bookData.chapters.length || 1;
+        if (bookData.currentChapter < totalChapters - 1) {
             bookData.currentChapter++;
             loadChapter(bookData.currentChapter);
         } else {
@@ -149,7 +150,16 @@ function updateProgressBar(phase) {
     });
 }
 
-// Phase 2: Concept Development - Single clean output
+// Helper to extract clean content from messy API response
+function extractContent(data) {
+    // Priority: rawResponse > content > stringify entire object
+    if (data.rawResponse) return data.rawResponse;
+    if (data.content) return data.content;
+    if (typeof data === 'string') return data;
+    return JSON.stringify(data, null, 2);
+}
+
+// Phase 2: Concept Development
 async function loadDevelopment() {
     const container = document.getElementById('developmentContent');
     const continueBtn = document.getElementById('phase2Continue');
@@ -179,8 +189,9 @@ async function loadDevelopment() {
         bookData.development = result.data;
         bookData.sessionId = result.sessionId;
 
-        // Display raw markdown from AI - no forced categorization
-        container.innerHTML = `<div class="ai-output">${markdownToHTML(result.data.content || result.data)}</div>`;
+        // Use rawResponse for clean output
+        const content = extractContent(result.data);
+        container.innerHTML = `<div class="ai-output">${markdownToHTML(content)}</div>`;
         continueBtn.style.display = 'inline-flex';
         
     } catch (err) {
@@ -189,7 +200,7 @@ async function loadDevelopment() {
     }
 }
 
-// Phase 3: Outline - Single document view
+// Phase 3: Outline
 async function loadOutline() {
     const container = document.getElementById('outlineContent');
     
@@ -217,8 +228,8 @@ async function loadOutline() {
 
         bookData.outline = result.data;
 
-        // Single scrollable document instead of broken-up sections
-        container.innerHTML = `<div class="ai-output outline-view">${markdownToHTML(result.data.content || result.data)}</div>`;
+        const content = extractContent(result.data);
+        container.innerHTML = `<div class="ai-output outline-view">${markdownToHTML(content)}</div>`;
         
     } catch (err) {
         console.error(err);
@@ -226,7 +237,7 @@ async function loadOutline() {
     }
 }
 
-// Phase 4: Audit - Clean single view
+// Phase 4: Audit
 async function loadAudit() {
     const container = document.getElementById('auditContent');
     const continueBtn = document.getElementById('phase4Continue');
@@ -255,8 +266,8 @@ async function loadAudit() {
 
         bookData.audit = result.data;
 
-        // Clean single output - no tier boxes unless AI includes them
-        container.innerHTML = `<div class="ai-output">${markdownToHTML(result.data.content || result.data)}</div>`;
+        const content = extractContent(result.data);
+        container.innerHTML = `<div class="ai-output">${markdownToHTML(content)}</div>`;
         continueBtn.style.display = 'inline-flex';
         
     } catch (err) {
@@ -273,10 +284,10 @@ async function loadChapter(chapterIndex) {
     const indicator = document.getElementById('chapterIndicator');
     const continueBtn = document.getElementById('phase6Continue');
     
-    const totalChapters = bookData.outline.chapters?.length || bookData.outline.length || 1;
-    const chapter = bookData.outline.chapters?.[chapterIndex] || bookData.outline[chapterIndex];
+    const totalChapters = bookData.outline?.chapters?.length || bookData.outline?.length || 1;
+    const chapter = bookData.outline?.chapters?.[chapterIndex] || bookData.outline?.[chapterIndex] || {};
     
-    title.textContent = `Chapter ${chapterIndex + 1}${chapter?.title ? ': ' + chapter.title : ''}`;
+    title.textContent = `Chapter ${chapterIndex + 1}${chapter.title ? ': ' + chapter.title : ''}`;
     indicator.textContent = `Chapter ${chapterIndex + 1} of ${totalChapters}`;
     
     container.innerHTML = `
@@ -308,8 +319,8 @@ async function loadChapter(chapterIndex) {
         const chapterContent = result.data;
         bookData.chapters[chapterIndex] = chapterContent;
         
-        // Single clean output
-        container.innerHTML = `<div class="ai-output chapter-text">${markdownToHTML(chapterContent.content || chapterContent)}</div>`;
+        const content = extractContent(chapterContent);
+        container.innerHTML = `<div class="ai-output chapter-text">${markdownToHTML(content)}</div>`;
         
         continueBtn.textContent = chapterIndex < totalChapters - 1 ? 'Continue to Next Chapter' : 'Complete Book';
         
@@ -319,11 +330,10 @@ async function loadChapter(chapterIndex) {
     }
 }
 
-// Improved markdown parser - handles AI output cleanly
+// Improved markdown parser
 function markdownToHTML(md) {
     if (!md) return '';
     if (typeof md !== 'string') {
-        // If AI returns JSON, try to extract content or stringify nicely
         try {
             return `<pre class="ai-output">${JSON.stringify(md, null, 2)}</pre>`;
         } catch(e) {
@@ -332,57 +342,43 @@ function markdownToHTML(md) {
     }
     
     return md
-        // Headers
         .replace(/^### (.*$)/gim, '<h3>$1</h3>')
         .replace(/^## (.*$)/gim, '<h2>$1</h2>')
         .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        // Bold/Italic
         .replace(/\*\*\*(.*)\*\*\*/gim, '<strong><em>$1</em></strong>')
         .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
         .replace(/\*(.*)\*/gim, '<em>$1</em>')
-        // Blockquotes
         .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
-        // Lists (basic support)
         .replace(/^- (.*$)/gim, '<li>$1</li>')
         .replace(/(<li>.*<\/li>\n?)+/gim, '<ul>$&</ul>')
-        // Links
         .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank">$1</a>')
-        // Horizontal rules
         .replace(/^---$/gim, '<hr>')
-        // Line breaks to paragraphs
         .replace(/\n\n/gim, '</p><p>')
         .replace(/^(?!<[h|b|l|u|o|p|a|h|r])(.*$)/gim, '<p>$1</p>')
-        // Clean up empty paragraphs
         .replace(/<p><\/p>/gim, '')
-        // Fix nested paragraphs in headers
         .replace(/<p><(h[1-6])>/gim, '<$1>')
         .replace(/<\/(h[1-6])><\/p>/gim, '</$1>');
 }
 
 function compileBook() {
-    const chapters = bookData.chapters;
-    
     let md = '';
     
-    // Use development content as frontmatter if available
-    if (bookData.development?.content) {
-        md += bookData.development.content + '\n\n---\n\n';
+    // Add each section if available
+    if (bookData.development) {
+        md += extractContent(bookData.development) + '\n\n---\n\n';
     }
     
-    // Add outline
-    if (bookData.outline?.content) {
-        md += '## Table of Contents\n\n' + bookData.outline.content + '\n\n---\n\n';
+    if (bookData.outline) {
+        md += extractContent(bookData.outline) + '\n\n---\n\n';
     }
     
-    // Add audit if exists
-    if (bookData.audit?.content) {
-        md += '## Structural Notes\n\n' + bookData.audit.content + '\n\n---\n\n';
+    if (bookData.audit) {
+        md += extractContent(bookData.audit) + '\n\n---\n\n';
     }
     
-    // Chapters
-    chapters.forEach((ch, i) => {
-        const content = typeof ch === 'string' ? ch : (ch.content || '');
-        md += content + '\n\n---\n\n';
+    // Add chapters
+    bookData.chapters.forEach((ch, i) => {
+        md += extractContent(ch) + '\n\n---\n\n';
     });
     
     return md;
@@ -395,9 +391,9 @@ function showFinalBook() {
     const md = compileBook();
     bookData.compiledMarkdown = md;
     
-    // Extract title from first h1 or use default
+    // Extract title from first h1
     const titleMatch = md.match(/^# (.*$)/m);
-    title.textContent = titleMatch ? titleMatch[1] : 'Your Book';
+    title.textContent = titleMatch ? titleMatch[1].replace(/\*/g, '') : 'Your Book';
     
     container.innerHTML = `<div class="final-book">${markdownToHTML(md)}</div>`;
 }
@@ -409,12 +405,11 @@ function publishBook() {
     btn.textContent = 'Publishing...';
     btn.disabled = true;
     
-    // Extract metadata from compiled content
     const content = bookData.compiledMarkdown || '';
     const titleMatch = content.match(/^# (.*$)/m);
-    const title = titleMatch ? titleMatch[1] : 'Untitled';
+    const title = titleMatch ? titleMatch[1].replace(/\*/g, '') : 'Untitled';
     
-    // Extract first paragraph as description
+    // Extract description from first paragraph
     const descMatch = content.match(/<p>(.*?)<\/p>/);
     const description = descMatch ? descMatch[1].replace(/<[^>]*>/g, '').substring(0, 200) : 'No description';
     
@@ -455,7 +450,7 @@ function detectGenre(content) {
     if (text.includes('romance')) return 'romance';
     if (text.includes('horror')) return 'horror';
     if (text.includes('thriller')) return 'thriller';
-    if (text.includes('non-fiction') || text.includes('nonfiction')) return 'non-fiction';
+    if (text.includes('non-fiction') || text.includes('nonfiction') || text.includes('reference')) return 'non-fiction';
     return 'literary';
 }
 
