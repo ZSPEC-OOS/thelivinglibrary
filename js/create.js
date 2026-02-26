@@ -1,5 +1,5 @@
 // Create Page Logic - Button-Driven Workflow
-
+const API_URL = 'https://book-api-tgl9.onrender.com/api/develop';
 let currentPhase = 1;
 let bookData = {
     concept: '',
@@ -154,50 +154,60 @@ function updateProgressBar(phase) {
 
 // Phase 2: Load Development (AI Integration Point)
 async function loadDevelopment() {
-    const container = document.getElementById('developmentContent');
-    const continueBtn = document.getElementById('phase2Continue');
+  const container = document.getElementById('developmentContent');
+  const continueBtn = document.getElementById('phase2Continue');
+  
+  container.innerHTML = `
+    <div class="loading-state">
+      <div class="spinner"></div>
+      <p>Consulting Claude Opus 4.6...</p>
+    </div>
+  `;
+  continueBtn.style.display = 'none';
+
+  try {
+    const response = await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        phase: 2,
+        data: { concept: bookData.concept }
+      })
+    });
+
+    const result = await response.json();
     
-    // Show loading
+    if (!result.success) throw new Error(result.error);
+
+    bookData.development = result.data;
+    bookData.sessionId = result.sessionId;
+
+    // Display results
     container.innerHTML = `
-        <div class="loading-state">
-            <div class="spinner"></div>
-            <p>Analyzing your concept...</p>
-        </div>
-    `;
-    continueBtn.style.display = 'none';
-    
-    // AI INTEGRATION: Call your AI service here with Phase 2 prompt
-    // const development = await callAIService({
-    //     phase: 2,
-    //     concept: bookData.concept
-    // });
-    
-    // Mock response for now
-    await simulateDelay(2000);
-    const development = generateMockDevelopment();
-    bookData.development = development;
-    
-    // Render development
-    container.innerHTML = `
-        <div class="development-section">
-            <h4>Refined Premise</h4>
-            <p>${development.premise}</p>
-        </div>
-        <div class="development-section">
-            <h4>Genre & Audience</h4>
-            <p>${development.genre} | ${development.audience}</p>
-        </div>
-        <div class="development-section">
-            <h4>Core Thesis</h4>
-            <p>${development.thesis}</p>
-        </div>
-        <div class="development-section">
-            <h4>Working Title</h4>
-            <p>${development.title}</p>
-        </div>
+      <div class="development-section">
+        <h4>Title</h4>
+        <p>${result.data.title || 'Untitled'}</p>
+      </div>
+      <div class="development-section">
+        <h4>Premise</h4>
+        <p>${result.data.premise || 'No premise generated'}</p>
+      </div>
+      <div class="development-section">
+        <h4>Genre & Audience</h4>
+        <p>${result.data.genre || 'Fiction'} | ${result.data.audience || 'General'}</p>
+      </div>
+      <div class="development-section">
+        <h4>Thesis</h4>
+        <p>${result.data.thesis || ''}</p>
+      </div>
     `;
     
     continueBtn.style.display = 'inline-flex';
+    
+  } catch (err) {
+    console.error(err);
+    container.innerHTML = `<p style="color: #ff4444; padding: 2rem;">Error: ${err.message}</p>`;
+  }
 }
 
 // Phase 3: Load Outline Batch (AI Integration Point)
