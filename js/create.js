@@ -14,12 +14,13 @@ let bookData = {
     compiledMarkdown: ''
 };
 
-// Phase configurations
+// Phase configurations - 6 phases
 const PHASES = {
     1: 'phase1',
     2: 'phase2', 
     3: 'phase3',
     4: 'phase4',
+    5: 'phase5',
     6: 'phase6',
     complete: 'phaseComplete'
 };
@@ -67,25 +68,25 @@ function setupEventListeners() {
         proceedToPhase(3);
     });
 
-    // Phase 3 Continue (next batch or proceed)
+    // Phase 3 Continue
     document.getElementById('phase3Continue').addEventListener('click', () => {
-        if (bookData.currentBatch < totalBatches() - 1) {
-            bookData.currentBatch++;
-            loadOutlineBatch(bookData.currentBatch);
-        } else {
-            proceedToPhase(4);
-        }
+        proceedToPhase(4);
     });
 
-    // Phase 4: Reference Protocol buttons
+    // Phase 4 Continue
+    document.getElementById('phase4Continue').addEventListener('click', () => {
+        proceedToPhase(5);
+    });
+
+    // Phase 5: Reference Protocol - Auto-proceed on selection
     document.getElementById('refYes').addEventListener('click', () => {
         bookData.referenceProtocol = true;
-        proceedToPhase(6);
+        showSelectionAndProceed('References enabled. Preparing chapter development with ACS citations...');
     });
 
     document.getElementById('refNo').addEventListener('click', () => {
         bookData.referenceProtocol = false;
-        proceedToPhase(6);
+        showSelectionAndProceed('Authoritative synthesis selected. Preparing chapter development...');
     });
 
     // Phase 6 Continue (next chapter or complete)
@@ -99,29 +100,41 @@ function setupEventListeners() {
     });
 }
 
+function showSelectionAndProceed(message) {
+    document.getElementById('referenceQuestion').style.display = 'none';
+    const confirmDiv = document.getElementById('selectionConfirmation');
+    confirmDiv.style.display = 'block';
+    document.getElementById('selectionText').textContent = message;
+    
+    setTimeout(() => {
+        proceedToPhase(6);
+    }, 1500);
+}
+
 // Navigation
 function proceedToPhase(phase) {
-    // Hide current phase
     document.querySelectorAll('.phase-content').forEach(p => p.classList.remove('active'));
     
-    // Update progress bar
     updateProgressBar(phase);
     
-    // Show new phase
     const phaseId = PHASES[phase];
     document.getElementById(phaseId).classList.add('active');
     
-    // Phase-specific initialization
     switch(phase) {
         case 2:
             loadDevelopment();
             break;
         case 3:
             bookData.currentBatch = 0;
-            loadOutlineBatch(0);
+            loadOutline();
             break;
         case 4:
-            showAuditSummary();
+            loadAudit();
+            break;
+        case 5:
+            // Reset Phase 5 view
+            document.getElementById('referenceQuestion').style.display = 'block';
+            document.getElementById('selectionConfirmation').style.display = 'none';
             break;
         case 6:
             bookData.currentChapter = 0;
@@ -136,8 +149,9 @@ function proceedToPhase(phase) {
 }
 
 function updateProgressBar(phase) {
-    const stepNum = phase === 'complete' ? 5 : 
-                    phase === 6 ? 5 :
+    const stepNum = phase === 'complete' ? 6 : 
+                    phase >= 6 ? 6 :
+                    phase >= 5 ? 5 :
                     phase >= 4 ? 4 : phase;
     
     document.querySelectorAll('.step').forEach((step, idx) => {
@@ -152,7 +166,7 @@ function updateProgressBar(phase) {
     });
 }
 
-// Phase 2: Load Development (Claude API)
+// Phase 2: Concept Development
 async function loadDevelopment() {
     const container = document.getElementById('developmentContent');
     const continueBtn = document.getElementById('phase2Continue');
@@ -184,23 +198,45 @@ async function loadDevelopment() {
         bookData.development = result.data;
         bookData.sessionId = result.sessionId;
 
-        // Display results
         container.innerHTML = `
-            <div class="development-section">
-                <h4>Title</h4>
-                <p>${result.data.title || 'Untitled'}</p>
+            <div class="development-field">
+                <h4>Working Title</h4>
+                <p class="field-content">${result.data.title || 'Untitled'}</p>
             </div>
-            <div class="development-section">
-                <h4>Premise</h4>
-                <p>${result.data.premise || 'No premise generated'}</p>
+            
+            <div class="development-field">
+                <h4>Genre & Subgenre</h4>
+                <p>${result.data.genre || 'Fiction'}</p>
             </div>
-            <div class="development-section">
-                <h4>Genre & Audience</h4>
-                <p>${result.data.genre || 'Fiction'} | ${result.data.audience || 'General'}</p>
+            
+            <div class="development-field">
+                <h4>Target Audience</h4>
+                <p>${result.data.audience || 'General readers'}</p>
             </div>
-            <div class="development-section">
-                <h4>Thesis</h4>
-                <p>${result.data.thesis || ''}</p>
+            
+            <div class="development-field">
+                <h4>Refined Premise</h4>
+                <p class="field-content">${result.data.premise || 'No premise generated'}</p>
+            </div>
+            
+            <div class="development-field">
+                <h4>Core Thesis / Central Arc</h4>
+                <p class="field-content">${result.data.thesis || ''}</p>
+            </div>
+            
+            <div class="development-field">
+                <h4>Audience Promise</h4>
+                <p>${result.data.promise || 'An engaging reading experience'}</p>
+            </div>
+            
+            <div class="development-field">
+                <h4>Structural Logic</h4>
+                <p>${result.data.structuralLogic || 'Standard narrative progression'}</p>
+            </div>
+            
+            <div class="development-field">
+                <h4>Tonal Register</h4>
+                <p>${result.data.tonalRegister || 'Accessible and engaging'}</p>
             </div>
         `;
         
@@ -212,88 +248,94 @@ async function loadDevelopment() {
     }
 }
 
-// Phase 3: Load Outline Batch (Claude API)
-async function loadOutlineBatch(batchIndex) {
+// Phase 3: Outline
+async function loadOutline() {
     const container = document.getElementById('outlineContent');
-    const indicator = document.getElementById('batchIndicator');
-    const continueBtn = document.getElementById('phase3Continue');
-    
-    // Show loading on first load
-    if (bookData.outline.length === 0) {
-        container.innerHTML = `
-            <div class="loading-state">
-                <div class="spinner"></div>
-                <p>Generating chapter outline with Claude Sonnet 4.6...</p>
-                <p style="font-size: 0.875rem;">Cached prompts active (90% savings)</p>
-                <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 20-40 seconds</p>
-            </div>
-        `;
-        
-        try {
-            const response = await fetch(API_URL, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    phase: 3,
-                    sessionId: bookData.sessionId,
-                    data: { development: bookData.development }
-                })
-            });
-
-            const result = await response.json();
-            if (!result.success) throw new Error(result.error);
-
-            bookData.outline = result.data.chapters || [];
-            
-        } catch (err) {
-            console.error(err);
-            container.innerHTML = `<p style="color: #ff4444;">Error: ${err.message}</p>`;
-            return;
-        }
-    }
-    
-    // Calculate batch
-    const batchSize = 5;
-    const totalBatches = Math.ceil(bookData.outline.length / batchSize);
-    const start = batchIndex * batchSize;
-    const end = Math.min(start + batchSize, bookData.outline.length);
-    const batch = bookData.outline.slice(start, end);
-    
-    // Update indicator
-    indicator.textContent = `Batch ${batchIndex + 1} of ${totalBatches}`;
-    
-    // Render batch
-    container.innerHTML = batch.map((chapter, idx) => `
-        <div class="chapter-item">
-            <h3>Chapter ${start + idx + 1}: ${chapter.title}</h3>
-            <div class="chapter-meta">
-                <p><strong>Purpose:</strong> ${chapter.purpose}</p>
-                <p><strong>Opening Hook:</strong> ${chapter.openingHook || chapter.opening}</p>
-                <p><strong>Key Elements:</strong> ${Array.isArray(chapter.keyElements) ? chapter.keyElements.join(', ') : (chapter.keyElements || 'Story development')}</p>
-            </div>
-        </div>
-    `).join('');
-    
-    // Update button text
-    continueBtn.textContent = batchIndex < totalBatches - 1 ? 'Continue' : 'Proceed to References';
-}
-
-function totalBatches() {
-    return Math.ceil(bookData.outline.length / 5);
-}
-
-// Phase 4: Show Audit Summary (Claude API)
-async function showAuditSummary() {
-    const container = document.getElementById('auditSummary');
     
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Running structural audit with Claude Sonnet 4.6...</p>
-            <p style="font-size: 0.875rem;">Cached prompts active</p>
-            <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 15-25 seconds</p>
+            <p>Generating chapter outline with Claude Sonnet 4.6...</p>
+            <p style="font-size: 0.875rem;">Cached prompts active (90% savings)</p>
+            <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 20-40 seconds</p>
         </div>
     `;
+    
+    try {
+        const response = await fetch(API_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                phase: 3,
+                sessionId: bookData.sessionId,
+                data: { development: bookData.development }
+            })
+        });
+
+        const result = await response.json();
+        if (!result.success) throw new Error(result.error);
+
+        bookData.outline = result.data.chapters || [];
+        
+        container.innerHTML = bookData.outline.map((chapter, idx) => `
+            <div class="chapter-detailed">
+                <h3>Chapter ${idx + 1}: ${chapter.title}</h3>
+                
+                <div class="chapter-section">
+                    <h5>Purpose</h5>
+                    <p>${chapter.purpose}</p>
+                </div>
+                
+                <div class="chapter-section">
+                    <h5>Opening Hook</h5>
+                    <p>${chapter.openingHook || chapter.opening}</p>
+                </div>
+                
+                <div class="chapter-section">
+                    <h5>Core Content</h5>
+                    <p>${chapter.coreContent || 'Detailed content development'}</p>
+                </div>
+                
+                <div class="chapter-section">
+                    <h5>Key Arguments / Scenes</h5>
+                    <p>${Array.isArray(chapter.keyElements) ? chapter.keyElements.join(', ') : (chapter.keyElements || 'Story development')}</p>
+                </div>
+                
+                <div class="chapter-section">
+                    <h5>Thematic Thread</h5>
+                    <p>${chapter.thematicThread || 'Advances central theme'}</p>
+                </div>
+                
+                <div class="chapter-section">
+                    <h5>Transition Logic</h5>
+                    <p>${chapter.transitionLogic || 'Flows to next chapter'}</p>
+                </div>
+                
+                <div class="chapter-section">
+                    <h5>Estimated Word Count</h5>
+                    <p>${chapter.wordCount || chapter.tokenCount || '2500-3500 words'}</p>
+                </div>
+            </div>
+        `).join('');
+        
+    } catch (err) {
+        console.error(err);
+        container.innerHTML = `<p style="color: #ff4444;">Error: ${err.message}</p>`;
+    }
+}
+
+// Phase 4: Audit
+async function loadAudit() {
+    const container = document.getElementById('auditContent');
+    const continueBtn = document.getElementById('phase4Continue');
+    
+    container.innerHTML = `
+        <div class="loading-state">
+            <div class="spinner"></div>
+            <p>Auditing structure with Claude Sonnet 4.6...</p>
+        </div>
+    `;
+    continueBtn.style.display = 'none';
     
     try {
         const response = await fetch(API_URL, {
@@ -312,26 +354,52 @@ async function showAuditSummary() {
         const audit = result.data;
         
         container.innerHTML = `
-            <p><strong>Structural Audit Complete</strong></p>
-            <p><strong>Pacing:</strong> ${audit.pacing || 'Verified'}</p>
-            <p><strong>Balance:</strong> ${audit.balance || 'Adjusted'}</p>
-            <p><strong>Arc Integrity:</strong> ${audit.arcIntegrity || 'Intact'}</p>
-            ${audit.gapAnalysis ? `<p><strong>Gap Analysis:</strong> ${audit.gapAnalysis}</p>` : ''}
-            ${audit.tier1Changes && audit.tier1Changes.length ? `<p><strong>Tier 1 Changes:</strong> ${audit.tier1Changes.length} applied silently</p>` : ''}
-            <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--color-text-muted);">All architectural optimizations applied automatically.</p>
+            <div class="audit-section">
+                <h4>Pacing</h4>
+                <p>${audit.pacing || 'Chapter sequence builds appropriate momentum for the narrative arc.'}</p>
+            </div>
+            
+            <div class="audit-section">
+                <h4>Balance</h4>
+                <p>${audit.balance || 'Chapters are proportionate in scope and depth relative to their narrative weight.'}</p>
+            </div>
+            
+            <div class="audit-section">
+                <h4>Arc Integrity</h4>
+                <p>${audit.arcIntegrity || 'The book opens a central question and resolves it satisfyingly.'}</p>
+            </div>
+            
+            <div class="audit-section">
+                <h4>Gap Analysis</h4>
+                <p>${audit.gapAnalysis || 'No significant gaps detected in the current structure.'}</p>
+            </div>
+            
+            <div class="audit-section">
+                <h4>Revision Flags</h4>
+                <div class="tier-box">
+                    <strong>Tier 1 — Silent Application (Auto-approved)</strong>
+                    <p>${audit.tier1Changes && audit.tier1Changes.length ? audit.tier1Changes.join('; ') : 'Content consolidation, subsection additions, and prose-level corrections will be applied automatically during chapter development.'}</p>
+                </div>
+                ${audit.tier2Changes && audit.tier2Changes.length ? `
+                <div class="tier-box tier-2">
+                    <strong>Tier 2 — Declared Changes (Presumed Approved)</strong>
+                    <p>${audit.tier2Changes.join('; ')}</p>
+                    <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--color-text-muted);">These structural changes will be executed during Phase 6 unless objected to now.</p>
+                </div>
+                ` : ''}
+            </div>
         `;
+        
+        continueBtn.style.display = 'inline-flex';
         
     } catch (err) {
         console.error(err);
-        container.innerHTML = `
-            <p><strong>Structural Audit Complete</strong></p>
-            <p>Pacing: Verified | Balance: Adjusted | Arc: Intact</p>
-            <p style="margin-top: 1rem; font-size: 0.875rem; color: var(--color-text-muted);">All architectural optimizations applied automatically.</p>
-        `;
+        container.innerHTML = `<p style="color: #ff4444;">Error loading audit: ${err.message}</p>`;
+        continueBtn.style.display = 'inline-flex';
     }
 }
 
-// Phase 6: Load Chapter (Claude API)
+// Phase 6: Chapter Writing
 async function loadChapter(chapterIndex) {
     const container = document.getElementById('chapterContent');
     const title = document.getElementById('chapterTitle');
@@ -343,7 +411,6 @@ async function loadChapter(chapterIndex) {
     title.textContent = `Chapter ${chapterIndex + 1}: ${chapter.title}`;
     indicator.textContent = `Chapter ${chapterIndex + 1} of ${bookData.outline.length}`;
     
-    // Show loading
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
@@ -374,7 +441,6 @@ async function loadChapter(chapterIndex) {
         const chapterContent = result.data;
         bookData.chapters.push(chapterContent);
         
-        // Render chapter
         container.innerHTML = `
             <h3>${chapter.title}</h3>
             <div class="chapter-text">${chapterContent.content}</div>
@@ -386,8 +452,7 @@ async function loadChapter(chapterIndex) {
             ` : ''}
         `;
         
-        // Update button text
-        continueBtn.textContent = chapterIndex < bookData.outline.length - 1 ? 'Continue' : 'Complete Book';
+        continueBtn.textContent = chapterIndex < bookData.outline.length - 1 ? 'Continue to Next Chapter' : 'Complete Book';
         
     } catch (err) {
         console.error(err);
@@ -407,14 +472,12 @@ function compileBook() {
     md += `## Core Thesis\n\n${dev.thesis || ''}\n\n`;
     md += `---\n\n`;
     
-    // Table of Contents
     md += `## Contents\n\n`;
     bookData.outline.forEach((ch, i) => {
         md += `${i + 1}. ${ch.title || `Chapter ${i + 1}`}\n`;
     });
     md += `\n---\n\n`;
     
-    // Chapters
     chapters.forEach((ch, i) => {
         const outline = bookData.outline[i] || {};
         md += `# Chapter ${i + 1}: ${outline.title || 'Untitled'}\n\n`;
@@ -467,13 +530,11 @@ function publishBook() {
     btn.textContent = 'Publishing...';
     btn.disabled = true;
     
-    // Generate summary for cover (first 150 chars of premise + ellipsis)
     const fullPremise = bookData.development?.premise || '';
     const summary = fullPremise.length > 150 
         ? fullPremise.substring(0, 150) + '...' 
         : fullPremise;
     
-    // Create book object for Firebase
     const newBook = {
         title: bookData.development?.title || 'Untitled',
         genre: mapGenre(bookData.development?.genre || 'Fiction'),
@@ -486,11 +547,9 @@ function publishBook() {
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
     };
     
-    // Save to Firebase
     db.collection('books').add(newBook)
         .then((docRef) => {
             console.log('Book published with ID:', docRef.id);
-            
             alert(`"${newBook.title}" has been published to The Living Library!`);
             btn.textContent = 'Published';
             
@@ -508,7 +567,6 @@ function publishBook() {
         });
 }
 
-// Helper to normalize genre names
 function mapGenre(genreString) {
     const genre = (genreString || '').toLowerCase();
     if (genre.includes('sci-fi') || genre.includes('science')) return 'sci-fi';
@@ -521,7 +579,6 @@ function mapGenre(genreString) {
     return 'literary';
 }
 
-// Reset
 function resetCreate() {
     if (!confirm('Start a new book? Current progress will be lost.')) return;
     
