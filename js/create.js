@@ -5,16 +5,15 @@ let currentPhase = 1;
 let bookData = {
     concept: '',
     development: null,
-    outline: [],
+    outline: null,
+    audit: null,
     referenceProtocol: false,
     chapters: [],
-    currentBatch: 0,
     currentChapter: 0,
     sessionId: null,
     compiledMarkdown: ''
 };
 
-// Phase configurations - 6 phases
 const PHASES = {
     1: 'phase1',
     2: 'phase2', 
@@ -25,13 +24,11 @@ const PHASES = {
     complete: 'phaseComplete'
 };
 
-// Initialize
 document.addEventListener('DOMContentLoaded', function() {
     setupEventListeners();
 });
 
 function setupEventListeners() {
-    // Phase 1: Concept input
     const conceptInput = document.getElementById('conceptInput');
     const charCount = document.querySelector('.char-count');
     
@@ -45,7 +42,6 @@ function setupEventListeners() {
         bookData.concept = this.value;
     });
 
-    // Suggestion chips
     document.querySelectorAll('.chip').forEach(chip => {
         chip.addEventListener('click', function() {
             conceptInput.value = this.dataset.prompt;
@@ -54,7 +50,6 @@ function setupEventListeners() {
         });
     });
 
-    // Phase 1 Continue
     document.getElementById('phase1Continue').addEventListener('click', () => {
         if (!bookData.concept.trim()) {
             alert('Please enter a concept for your book.');
@@ -63,25 +58,21 @@ function setupEventListeners() {
         proceedToPhase(2);
     });
 
-    // Phase 2 Continue
     document.getElementById('phase2Continue').addEventListener('click', () => {
         proceedToPhase(3);
     });
 
-    // Phase 3 Continue
     document.getElementById('phase3Continue').addEventListener('click', () => {
         proceedToPhase(4);
     });
 
-    // Phase 4 Continue
     document.getElementById('phase4Continue').addEventListener('click', () => {
         proceedToPhase(5);
     });
 
-    // Phase 5: Reference Protocol - Auto-proceed on selection
     document.getElementById('refYes').addEventListener('click', () => {
         bookData.referenceProtocol = true;
-        showSelectionAndProceed('References enabled. Preparing chapter development with ACS citations...');
+        showSelectionAndProceed('References enabled. Preparing chapter development...');
     });
 
     document.getElementById('refNo').addEventListener('click', () => {
@@ -89,9 +80,8 @@ function setupEventListeners() {
         showSelectionAndProceed('Authoritative synthesis selected. Preparing chapter development...');
     });
 
-    // Phase 6 Continue (next chapter or complete)
     document.getElementById('phase6Continue').addEventListener('click', () => {
-        if (bookData.currentChapter < bookData.outline.length - 1) {
+        if (bookData.currentChapter < bookData.outline.chapters.length - 1) {
             bookData.currentChapter++;
             loadChapter(bookData.currentChapter);
         } else {
@@ -111,10 +101,8 @@ function showSelectionAndProceed(message) {
     }, 1500);
 }
 
-// Navigation
 function proceedToPhase(phase) {
     document.querySelectorAll('.phase-content').forEach(p => p.classList.remove('active'));
-    
     updateProgressBar(phase);
     
     const phaseId = PHASES[phase];
@@ -125,14 +113,12 @@ function proceedToPhase(phase) {
             loadDevelopment();
             break;
         case 3:
-            bookData.currentBatch = 0;
             loadOutline();
             break;
         case 4:
             loadAudit();
             break;
         case 5:
-            // Reset Phase 5 view
             document.getElementById('referenceQuestion').style.display = 'block';
             document.getElementById('selectionConfirmation').style.display = 'none';
             break;
@@ -149,10 +135,7 @@ function proceedToPhase(phase) {
 }
 
 function updateProgressBar(phase) {
-    const stepNum = phase === 'complete' ? 6 : 
-                    phase >= 6 ? 6 :
-                    phase >= 5 ? 5 :
-                    phase >= 4 ? 4 : phase;
+    const stepNum = phase === 'complete' ? 6 : Math.min(phase, 6);
     
     document.querySelectorAll('.step').forEach((step, idx) => {
         const stepNumber = idx + 1;
@@ -166,7 +149,7 @@ function updateProgressBar(phase) {
     });
 }
 
-// Phase 2: Concept Development
+// Phase 2: Concept Development - Single clean output
 async function loadDevelopment() {
     const container = document.getElementById('developmentContent');
     const continueBtn = document.getElementById('phase2Continue');
@@ -175,7 +158,6 @@ async function loadDevelopment() {
         <div class="loading-state">
             <div class="spinner"></div>
             <p>Consulting Claude Sonnet 4.6...</p>
-            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Using cached prompts (90% cost savings)</p>
             <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 15-30 seconds</p>
         </div>
     `;
@@ -192,71 +174,29 @@ async function loadDevelopment() {
         });
 
         const result = await response.json();
-        
         if (!result.success) throw new Error(result.error);
 
         bookData.development = result.data;
         bookData.sessionId = result.sessionId;
 
-        container.innerHTML = `
-            <div class="development-field">
-                <h4>Working Title</h4>
-                <p class="field-content">${result.data.title || 'Untitled'}</p>
-            </div>
-            
-            <div class="development-field">
-                <h4>Genre & Subgenre</h4>
-                <p>${result.data.genre || 'Fiction'}</p>
-            </div>
-            
-            <div class="development-field">
-                <h4>Target Audience</h4>
-                <p>${result.data.audience || 'General readers'}</p>
-            </div>
-            
-            <div class="development-field">
-                <h4>Refined Premise</h4>
-                <p class="field-content">${result.data.premise || 'No premise generated'}</p>
-            </div>
-            
-            <div class="development-field">
-                <h4>Core Thesis / Central Arc</h4>
-                <p class="field-content">${result.data.thesis || ''}</p>
-            </div>
-            
-            <div class="development-field">
-                <h4>Audience Promise</h4>
-                <p>${result.data.promise || 'An engaging reading experience'}</p>
-            </div>
-            
-            <div class="development-field">
-                <h4>Structural Logic</h4>
-                <p>${result.data.structuralLogic || 'Standard narrative progression'}</p>
-            </div>
-            
-            <div class="development-field">
-                <h4>Tonal Register</h4>
-                <p>${result.data.tonalRegister || 'Accessible and engaging'}</p>
-            </div>
-        `;
-        
+        // Display raw markdown from AI - no forced categorization
+        container.innerHTML = `<div class="ai-output">${markdownToHTML(result.data.content || result.data)}</div>`;
         continueBtn.style.display = 'inline-flex';
         
     } catch (err) {
         console.error(err);
-        container.innerHTML = `<p style="color: #ff4444; padding: 2rem;">Error: ${err.message}</p>`;
+        container.innerHTML = `<div class="error-message">Error: ${err.message}</div>`;
     }
 }
 
-// Phase 3: Outline
+// Phase 3: Outline - Single document view
 async function loadOutline() {
     const container = document.getElementById('outlineContent');
     
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Generating chapter outline with Claude Sonnet 4.6...</p>
-            <p style="font-size: 0.875rem;">Cached prompts active (90% savings)</p>
+            <p>Generating chapter outline...</p>
             <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 20-40 seconds</p>
         </div>
     `;
@@ -275,56 +215,18 @@ async function loadOutline() {
         const result = await response.json();
         if (!result.success) throw new Error(result.error);
 
-        bookData.outline = result.data.chapters || [];
-        
-        container.innerHTML = bookData.outline.map((chapter, idx) => `
-            <div class="chapter-detailed">
-                <h3>Chapter ${idx + 1}: ${chapter.title}</h3>
-                
-                <div class="chapter-section">
-                    <h5>Purpose</h5>
-                    <p>${chapter.purpose}</p>
-                </div>
-                
-                <div class="chapter-section">
-                    <h5>Opening Hook</h5>
-                    <p>${chapter.openingHook || chapter.opening}</p>
-                </div>
-                
-                <div class="chapter-section">
-                    <h5>Core Content</h5>
-                    <p>${chapter.coreContent || 'Detailed content development'}</p>
-                </div>
-                
-                <div class="chapter-section">
-                    <h5>Key Arguments / Scenes</h5>
-                    <p>${Array.isArray(chapter.keyElements) ? chapter.keyElements.join(', ') : (chapter.keyElements || 'Story development')}</p>
-                </div>
-                
-                <div class="chapter-section">
-                    <h5>Thematic Thread</h5>
-                    <p>${chapter.thematicThread || 'Advances central theme'}</p>
-                </div>
-                
-                <div class="chapter-section">
-                    <h5>Transition Logic</h5>
-                    <p>${chapter.transitionLogic || 'Flows to next chapter'}</p>
-                </div>
-                
-                <div class="chapter-section">
-                    <h5>Estimated Word Count</h5>
-                    <p>${chapter.wordCount || chapter.tokenCount || '2500-3500 words'}</p>
-                </div>
-            </div>
-        `).join('');
+        bookData.outline = result.data;
+
+        // Single scrollable document instead of broken-up sections
+        container.innerHTML = `<div class="ai-output outline-view">${markdownToHTML(result.data.content || result.data)}</div>`;
         
     } catch (err) {
         console.error(err);
-        container.innerHTML = `<p style="color: #ff4444;">Error: ${err.message}</p>`;
+        container.innerHTML = `<div class="error-message">Error: ${err.message}</div>`;
     }
 }
 
-// Phase 4: Audit
+// Phase 4: Audit - Clean single view
 async function loadAudit() {
     const container = document.getElementById('auditContent');
     const continueBtn = document.getElementById('phase4Continue');
@@ -332,7 +234,7 @@ async function loadAudit() {
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Auditing structure with Claude Sonnet 4.6...</p>
+            <p>Auditing structure...</p>
         </div>
     `;
     continueBtn.style.display = 'none';
@@ -351,50 +253,15 @@ async function loadAudit() {
         const result = await response.json();
         if (!result.success) throw new Error(result.error);
 
-        const audit = result.data;
-        
-        container.innerHTML = `
-            <div class="audit-section">
-                <h4>Pacing</h4>
-                <p>${audit.pacing || 'Chapter sequence builds appropriate momentum for the narrative arc.'}</p>
-            </div>
-            
-            <div class="audit-section">
-                <h4>Balance</h4>
-                <p>${audit.balance || 'Chapters are proportionate in scope and depth relative to their narrative weight.'}</p>
-            </div>
-            
-            <div class="audit-section">
-                <h4>Arc Integrity</h4>
-                <p>${audit.arcIntegrity || 'The book opens a central question and resolves it satisfyingly.'}</p>
-            </div>
-            
-            <div class="audit-section">
-                <h4>Gap Analysis</h4>
-                <p>${audit.gapAnalysis || 'No significant gaps detected in the current structure.'}</p>
-            </div>
-            
-            <div class="audit-section">
-                <h4>Revision Flags</h4>
-                <div class="tier-box">
-                    <strong>Tier 1 — Silent Application (Auto-approved)</strong>
-                    <p>${audit.tier1Changes && audit.tier1Changes.length ? audit.tier1Changes.join('; ') : 'Content consolidation, subsection additions, and prose-level corrections will be applied automatically during chapter development.'}</p>
-                </div>
-                ${audit.tier2Changes && audit.tier2Changes.length ? `
-                <div class="tier-box tier-2">
-                    <strong>Tier 2 — Declared Changes (Presumed Approved)</strong>
-                    <p>${audit.tier2Changes.join('; ')}</p>
-                    <p style="font-size: 0.85rem; margin-top: 0.5rem; color: var(--color-text-muted);">These structural changes will be executed during Phase 6 unless objected to now.</p>
-                </div>
-                ` : ''}
-            </div>
-        `;
-        
+        bookData.audit = result.data;
+
+        // Clean single output - no tier boxes unless AI includes them
+        container.innerHTML = `<div class="ai-output">${markdownToHTML(result.data.content || result.data)}</div>`;
         continueBtn.style.display = 'inline-flex';
         
     } catch (err) {
         console.error(err);
-        container.innerHTML = `<p style="color: #ff4444;">Error loading audit: ${err.message}</p>`;
+        container.innerHTML = `<div class="error-message">Error loading audit: ${err.message}</div>`;
         continueBtn.style.display = 'inline-flex';
     }
 }
@@ -406,17 +273,17 @@ async function loadChapter(chapterIndex) {
     const indicator = document.getElementById('chapterIndicator');
     const continueBtn = document.getElementById('phase6Continue');
     
-    const chapter = bookData.outline[chapterIndex];
+    const totalChapters = bookData.outline.chapters?.length || bookData.outline.length || 1;
+    const chapter = bookData.outline.chapters?.[chapterIndex] || bookData.outline[chapterIndex];
     
-    title.textContent = `Chapter ${chapterIndex + 1}: ${chapter.title}`;
-    indicator.textContent = `Chapter ${chapterIndex + 1} of ${bookData.outline.length}`;
+    title.textContent = `Chapter ${chapterIndex + 1}${chapter?.title ? ': ' + chapter.title : ''}`;
+    indicator.textContent = `Chapter ${chapterIndex + 1} of ${totalChapters}`;
     
     container.innerHTML = `
         <div class="loading-state">
             <div class="spinner"></div>
-            <p>Claude Sonnet 4.6 is writing Chapter ${chapterIndex + 1}...</p>
-            <p style="font-size: 0.875rem; margin-top: 0.5rem;">Cached prompts active (90% cost savings)</p>
-            <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 30-60 seconds per chapter</p>
+            <p>Writing Chapter ${chapterIndex + 1}...</p>
+            <p style="font-size: 0.75rem; color: var(--color-text-muted);">This may take 30-60 seconds</p>
         </div>
     `;
     
@@ -439,78 +306,88 @@ async function loadChapter(chapterIndex) {
         if (!result.success) throw new Error(result.error);
 
         const chapterContent = result.data;
-        bookData.chapters.push(chapterContent);
+        bookData.chapters[chapterIndex] = chapterContent;
         
-        container.innerHTML = `
-            <h3>${chapter.title}</h3>
-            <div class="chapter-text">${chapterContent.content}</div>
-            ${chapterContent.hasReferences && chapterContent.references ? `
-                <div style="margin-top: 2rem; padding-top: 1rem; border-top: 1px solid var(--color-border);">
-                    <h4>References</h4>
-                    <p style="font-size: 0.875rem;">${chapterContent.references}</p>
-                </div>
-            ` : ''}
-        `;
+        // Single clean output
+        container.innerHTML = `<div class="ai-output chapter-text">${markdownToHTML(chapterContent.content || chapterContent)}</div>`;
         
-        continueBtn.textContent = chapterIndex < bookData.outline.length - 1 ? 'Continue to Next Chapter' : 'Complete Book';
+        continueBtn.textContent = chapterIndex < totalChapters - 1 ? 'Continue to Next Chapter' : 'Complete Book';
         
     } catch (err) {
         console.error(err);
-        container.innerHTML = `<p style="color: #ff4444; padding: 2rem;">Error generating chapter: ${err.message}</p>`;
+        container.innerHTML = `<div class="error-message">Error generating chapter: ${err.message}</div>`;
     }
 }
 
-// Compile all content into markdown
+// Improved markdown parser - handles AI output cleanly
+function markdownToHTML(md) {
+    if (!md) return '';
+    if (typeof md !== 'string') {
+        // If AI returns JSON, try to extract content or stringify nicely
+        try {
+            return `<pre class="ai-output">${JSON.stringify(md, null, 2)}</pre>`;
+        } catch(e) {
+            return String(md);
+        }
+    }
+    
+    return md
+        // Headers
+        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
+        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
+        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
+        // Bold/Italic
+        .replace(/\*\*\*(.*)\*\*\*/gim, '<strong><em>$1</em></strong>')
+        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
+        .replace(/\*(.*)\*/gim, '<em>$1</em>')
+        // Blockquotes
+        .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
+        // Lists (basic support)
+        .replace(/^- (.*$)/gim, '<li>$1</li>')
+        .replace(/(<li>.*<\/li>\n?)+/gim, '<ul>$&</ul>')
+        // Links
+        .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2" target="_blank">$1</a>')
+        // Horizontal rules
+        .replace(/^---$/gim, '<hr>')
+        // Line breaks to paragraphs
+        .replace(/\n\n/gim, '</p><p>')
+        .replace(/^(?!<[h|b|l|u|o|p|a|h|r])(.*$)/gim, '<p>$1</p>')
+        // Clean up empty paragraphs
+        .replace(/<p><\/p>/gim, '')
+        // Fix nested paragraphs in headers
+        .replace(/<p><(h[1-6])>/gim, '<$1>')
+        .replace(/<\/(h[1-6])><\/p>/gim, '</$1>');
+}
+
 function compileBook() {
-    const dev = bookData.development || {};
     const chapters = bookData.chapters;
     
-    let md = `# ${dev.title || 'Untitled'}\n\n`;
-    md += `*${dev.genre || 'Fiction'} | ${dev.audience || 'General'}*\n\n`;
-    md += `---\n\n`;
-    md += `## Premise\n\n${dev.premise || ''}\n\n`;
-    md += `## Core Thesis\n\n${dev.thesis || ''}\n\n`;
-    md += `---\n\n`;
+    let md = '';
     
-    md += `## Contents\n\n`;
-    bookData.outline.forEach((ch, i) => {
-        md += `${i + 1}. ${ch.title || `Chapter ${i + 1}`}\n`;
-    });
-    md += `\n---\n\n`;
+    // Use development content as frontmatter if available
+    if (bookData.development?.content) {
+        md += bookData.development.content + '\n\n---\n\n';
+    }
     
+    // Add outline
+    if (bookData.outline?.content) {
+        md += '## Table of Contents\n\n' + bookData.outline.content + '\n\n---\n\n';
+    }
+    
+    // Add audit if exists
+    if (bookData.audit?.content) {
+        md += '## Structural Notes\n\n' + bookData.audit.content + '\n\n---\n\n';
+    }
+    
+    // Chapters
     chapters.forEach((ch, i) => {
-        const outline = bookData.outline[i] || {};
-        md += `# Chapter ${i + 1}: ${outline.title || 'Untitled'}\n\n`;
-        md += `${ch.content || ''}\n\n`;
-        
-        if (ch.hasReferences && ch.references) {
-            md += `## References\n\n${ch.references}\n\n`;
-        }
-        
-        md += `---\n\n`;
+        const content = typeof ch === 'string' ? ch : (ch.content || '');
+        md += content + '\n\n---\n\n';
     });
     
     return md;
 }
 
-// Simple markdown to HTML converter
-function markdownToHTML(md) {
-    if (!md) return '';
-    return md
-        .replace(/^# (.*$)/gim, '<h1>$1</h1>')
-        .replace(/^## (.*$)/gim, '<h2>$1</h2>')
-        .replace(/^### (.*$)/gim, '<h3>$1</h3>')
-        .replace(/\*\*(.*)\*\*/gim, '<strong>$1</strong>')
-        .replace(/\*(.*)\*/gim, '<em>$1</em>')
-        .replace(/^> (.*$)/gim, '<blockquote>$1</blockquote>')
-        .replace(/\[([^\]]+)\]\(([^)]+)\)/gim, '<a href="$2">$1</a>')
-        .replace(/\n\n/gim, '</p><p>')
-        .replace(/^(?!<[h|b|p|u|o|l])(.*$)/gim, '<p>$1</p>')
-        .replace(/<p><\/p>/gim, '')
-        .replace(/^---$/gim, '<hr>');
-}
-
-// Show final book
 function showFinalBook() {
     const container = document.getElementById('bookContent');
     const title = document.getElementById('finalTitle');
@@ -518,11 +395,13 @@ function showFinalBook() {
     const md = compileBook();
     bookData.compiledMarkdown = md;
     
-    title.textContent = bookData.development?.title || 'Your Book';
-    container.innerHTML = markdownToHTML(md);
+    // Extract title from first h1 or use default
+    const titleMatch = md.match(/^# (.*$)/m);
+    title.textContent = titleMatch ? titleMatch[1] : 'Your Book';
+    
+    container.innerHTML = `<div class="final-book">${markdownToHTML(md)}</div>`;
 }
 
-// Publish to Firebase
 function publishBook() {
     const btn = document.querySelector('.viewer-actions .action-btn.primary');
     if (!btn) return;
@@ -530,18 +409,22 @@ function publishBook() {
     btn.textContent = 'Publishing...';
     btn.disabled = true;
     
-    const fullPremise = bookData.development?.premise || '';
-    const summary = fullPremise.length > 150 
-        ? fullPremise.substring(0, 150) + '...' 
-        : fullPremise;
+    // Extract metadata from compiled content
+    const content = bookData.compiledMarkdown || '';
+    const titleMatch = content.match(/^# (.*$)/m);
+    const title = titleMatch ? titleMatch[1] : 'Untitled';
+    
+    // Extract first paragraph as description
+    const descMatch = content.match(/<p>(.*?)<\/p>/);
+    const description = descMatch ? descMatch[1].replace(/<[^>]*>/g, '').substring(0, 200) : 'No description';
     
     const newBook = {
-        title: bookData.development?.title || 'Untitled',
-        genre: mapGenre(bookData.development?.genre || 'Fiction'),
-        chapters: bookData.outline?.length || 0,
-        description: bookData.development?.premise || 'No description',
-        summary: summary,
-        content: compileBook(),
+        title: title,
+        genre: detectGenre(content),
+        chapters: bookData.chapters.length,
+        description: description,
+        summary: description.substring(0, 150) + (description.length > 150 ? '...' : ''),
+        content: bookData.compiledMarkdown,
         fullContent: document.getElementById('bookContent').innerHTML,
         referenceProtocol: bookData.referenceProtocol,
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
@@ -549,33 +432,30 @@ function publishBook() {
     
     db.collection('books').add(newBook)
         .then((docRef) => {
-            console.log('Book published with ID:', docRef.id);
-            alert(`"${newBook.title}" has been published to The Living Library!`);
+            alert(`"${newBook.title}" has been published!`);
             btn.textContent = 'Published';
-            
             setTimeout(() => {
-                if (confirm('Go to Browse Collection to see your book?')) {
+                if (confirm('Go to Browse Collection?')) {
                     window.location.href = 'visit.html';
                 }
             }, 500);
         })
         .catch((error) => {
-            console.error('Error publishing:', error);
-            alert('Error publishing book: ' + error.message);
+            alert('Error publishing: ' + error.message);
             btn.textContent = 'Publish Book';
             btn.disabled = false;
         });
 }
 
-function mapGenre(genreString) {
-    const genre = (genreString || '').toLowerCase();
-    if (genre.includes('sci-fi') || genre.includes('science')) return 'sci-fi';
-    if (genre.includes('fantasy')) return 'fantasy';
-    if (genre.includes('mystery')) return 'mystery';
-    if (genre.includes('romance')) return 'romance';
-    if (genre.includes('horror')) return 'horror';
-    if (genre.includes('non-fiction') || genre.includes('nonfiction')) return 'non-fiction';
-    if (genre.includes('thriller')) return 'thriller';
+function detectGenre(content) {
+    const text = content.toLowerCase();
+    if (text.includes('sci-fi') || text.includes('science fiction')) return 'sci-fi';
+    if (text.includes('fantasy')) return 'fantasy';
+    if (text.includes('mystery')) return 'mystery';
+    if (text.includes('romance')) return 'romance';
+    if (text.includes('horror')) return 'horror';
+    if (text.includes('thriller')) return 'thriller';
+    if (text.includes('non-fiction') || text.includes('nonfiction')) return 'non-fiction';
     return 'literary';
 }
 
@@ -585,10 +465,10 @@ function resetCreate() {
     bookData = {
         concept: '',
         development: null,
-        outline: [],
+        outline: null,
+        audit: null,
         referenceProtocol: false,
         chapters: [],
-        currentBatch: 0,
         currentChapter: 0,
         sessionId: null,
         compiledMarkdown: ''
